@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Algorithm Explorer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --line:#334155; --txt:#e2e8f0; --mut:#94a3b8; --acc:#38bdf8; --hot:#f59e0b; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, sans-serif; background:var(--bg); color:var(--txt); }
+  header { padding:16px 24px; border-bottom:1px solid var(--line); }
+  h1 { margin:0; font-size:20px; }
+  main { max-width:1100px; margin:0 auto; padding:16px; }
+  .tabs { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+  .tabs button { background:var(--card); color:var(--txt); border:1px solid var(--line); padding:8px 14px; border-radius:6px; cursor:pointer; }
+  .tabs button.on { background:var(--acc); color:#0f172a; font-weight:600; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:14px; margin-bottom:12px; }
+  label { display:block; font-size:13px; color:var(--mut); margin:8px 0 4px; }
+  select, input, textarea { width:100%; background:var(--bg); color:var(--txt); border:1px solid var(--line); border-radius:6px; padding:8px; font:inherit; }
+  textarea { min-height:70px; font-family:ui-monospace, monospace; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; } .row > * { flex:1; min-width:160px; }
+  button.go { background:var(--acc); color:#0f172a; border:0; padding:9px 18px; border-radius:6px; font-weight:600; cursor:pointer; margin-top:10px; }
+  button.sec { background:transparent; color:var(--acc); border:1px solid var(--acc); padding:8px 12px; border-radius:6px; cursor:pointer; }
+  .hidden { display:none; }
+  #err { color:#f87171; margin:6px 0; min-height:18px; }
+  .stats { display:flex; gap:10px; flex-wrap:wrap; }
+  .stat { background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:8px 12px; min-width:140px; }
+  .stat b { display:block; font-size:18px; color:var(--acc); } .stat span { font-size:12px; color:var(--mut); }
+  table { width:100%; border-collapse:collapse; font-size:14px; } th, td { border-bottom:1px solid var(--line); padding:6px 8px; text-align:left; }
+  #viz { display:flex; align-items:flex-end; gap:2px; height:180px; padding:8px 0; }
+  #viz .bar { flex:1; background:var(--acc); min-width:2px; position:relative; }
+  #viz .bar.m { background:var(--hot); }
+  #viz .box { padding:8px 12px; border:1px solid var(--acc); border-radius:4px; align-self:center; flex:0 0 auto; font-family:monospace; }
+  #steps { max-height:260px; overflow:auto; font-family:ui-monospace, monospace; font-size:13px; white-space:pre; }
+  #steps div { padding:2px 6px; cursor:pointer; } #steps div.on { background:var(--line); color:var(--hot); }
+  .ctl { display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap; }
+</style>
+</head>
+<body>
+<header><h1>Algorithm Explorer</h1></header>
+<main>
+  <div class="tabs" id="tabs">
+    <button data-t="sort" class="on">Sorting</button>
+    <button data-t="recursion">Recursion</button>
+    <button data-t="ds">Data structures</button>
+    <button data-t="benchmark">Complexity benchmark</button>
+  </div>
+
+  <div class="card" id="p-sort">
+    <label>Algorithm</label>
+    <select id="s-alg">
+      <option value="bubble">Bubble sort</option><option value="selection">Selection sort</option>
+      <option value="insertion">Insertion sort</option><option value="merge">Merge sort (recursive)</option>
+      <option value="quick">Quick sort (recursive)</option>
+    </select>
+    <label>Numbers (separated by spaces or commas, max 5000)</label>
+    <textarea id="s-in">64 25 12 22 11 90 5 38</textarea>
+    <button class="sec" onclick="randomList()">Random 20 numbers</button>
+    <br><button class="go" onclick="runSort()">Run</button>
+  </div>
+
+  <div class="card hidden" id="p-recursion">
+    <label>Algorithm</label>
+    <select id="r-alg" onchange="recUI()">
+      <option value="factorial">Factorial (n ≤ 100)</option>
+      <option value="fibonacci">Fibonacci, naive (n ≤ 32)</option>
+      <option value="fibmemo">Fibonacci, memoized (n ≤ 70)</option>
+      <option value="hanoi">Tower of Hanoi (n ≤ 20)</option>
+      <option value="binary">Binary search, recursive</option>
+    </select>
+    <div id="r-n-wrap"><label>n</label><input id="r-n" type="number" value="5"></div>
+    <div id="r-bin" class="hidden row">
+      <div><label>List (will be sorted first)</label><input id="r-list" value="9 3 7 1 5 11 2"></div>
+      <div><label>Target</label><input id="r-target" type="number" value="7"></div>
+    </div>
+    <button class="go" onclick="runRec()">Run</button>
+  </div>
+
+  <div class="card hidden" id="p-ds">
+    <label>Structure</label>
+    <select id="d-st" onchange="dsHint()">
+      <option value="stack">Stack</option><option value="queue">Queue</option><option value="list">Linked list</option>
+    </select>
+    <label id="d-hint"></label>
+    <textarea id="d-cmd">push 5; push 8; push 2; peek; pop; size</textarea>
+    <button class="go" onclick="runDS()">Run</button>
+  </div>
+
+  <div class="card hidden" id="p-benchmark">
+    <p>Runs all five sorting algorithms on random data of size 100, 500, 1000, 2000 and 4000 and shows operations and time, so you can see O(n²) against O(n log n) grow.</p>
+    <button class="go" onclick="runBench()">Run benchmark</button>
+  </div>
+
+  <div id="err"></div>
+
+  <div id="out" class="hidden">
+    <div class="card"><b>Result</b><div id="result" style="margin-top:6px;word-break:break-word"></div></div>
+    <div class="card"><div class="stats" id="stats"></div></div>
+    <div class="card" id="vizCard">
+      <div class="ctl">
+        <button class="sec" onclick="step(-1)">Prev</button>
+        <button class="sec" onclick="step(1)">Next</button>
+        <button class="sec" id="playBtn" onclick="play()">Play</button>
+        <span id="stepInfo" style="color:var(--mut)"></span>
+      </div>
+      <div id="stepText" style="margin-bottom:6px"></div>
+      <div id="viz"></div>
+    </div>
+    <div class="card"><b>Steps taken</b><div id="steps" style="margin-top:6px"></div><div id="dropped" style="color:var(--mut);font-size:12px;margin-top:4px"></div></div>
+    <div class="card"><b>Time complexity analysis</b>
+      <table id="cx" style="margin-top:6px"></table>
+    </div>
+  </div>
+
+  <div id="benchOut" class="card hidden"></div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+let steps = [], cur = 0, view = 'none', timer = null;
+
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.remove('on')); b.classList.add('on');
+  ['sort','recursion','ds','benchmark'].forEach(t => $('p-' + t).classList.toggle('hidden', t !== b.dataset.t));
+  $('out').classList.add('hidden'); $('benchOut').classList.add('hidden'); $('err').textContent = '';
+});
+
+function randomList() {
+  let s = ''; for (let i = 0; i < 20; i++) s += (Math.floor(Math.random() * 99) + 1) + (i < 19 ? ' ' : '');
+  $('s-in').value = s;
+}
+function recUI() {
+  const b = $('r-alg').value === 'binary';
+  $('r-bin').classList.toggle('hidden', !b); $('r-n-wrap').classList.toggle('hidden', b);
+}
+const HINTS = {
+  stack: 'Commands: push N, pop, peek, size (separate with ; , or new lines)',
+  queue: 'Commands: enqueue N, dequeue, front, size',
+  list: 'Commands: append N, prepend N, delete N, search N, reverse, size'
+};
+function dsHint() {
+  const s = $('d-st').value; $('d-hint').textContent = HINTS[s];
+  $('d-cmd').value = { stack: 'push 5; push 8; push 2; peek; pop; size',
+    queue: 'enqueue 5; enqueue 8; enqueue 2; front; dequeue; size',
+    list: 'append 5; append 8; prepend 1; search 8; delete 5; reverse' }[s];
+}
+dsHint();
+
+async function call(payload) {
+  $('err').textContent = '';
+  try {
+    const r = await fetch('/api/run', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error);
+    return d;
+  } catch (e) { $('err').textContent = e.message; return null; }
+}
+async function runSort() { const d = await call({ type: 'sort', algorithm: $('s-alg').value, input: $('s-in').value }); if (d) render(d); }
+async function runRec() {
+  const d = await call({ type: 'recursion', algorithm: $('r-alg').value, n: $('r-n').value, input: $('r-list').value, target: $('r-target').value });
+  if (d) render(d);
+}
+async function runDS() { const d = await call({ type: 'ds', structure: $('d-st').value, commands: $('d-cmd').value }); if (d) render(d); }
+
+async function runBench() {
+  const d = await call({ type: 'benchmark' }); if (!d) return;
+  $('out').classList.add('hidden');
+  let h = '<b>Operations (comparisons + writes) and running time in ms, random data</b><table style="margin-top:8px"><tr><th>n</th>';
+  d.algorithms.forEach(a => h += `<th>${a}</th>`); h += '</tr>';
+  d.sizes.forEach(n => {
+    h += `<tr><td>${n}</td>`;
+    d.algorithms.forEach(a => {
+      const r = d.rows.find(x => x.size === n && x.algorithm === a);
+      h += `<td>${r.operations.toLocaleString()}<br><span style="color:var(--mut)">${r.timeMs} ms</span></td>`;
+    });
+    h += '</tr>';
+  });
+  h += '</table><p style="color:var(--mut);font-size:13px">When n doubles, O(n²) algorithms do about 4 times the work; merge and quick sort do a little over 2 times.</p>';
+  $('benchOut').innerHTML = h; $('benchOut').classList.remove('hidden');
+}
+
+function render(d) {
+  stop(); $('benchOut').classList.add('hidden'); $('out').classList.remove('hidden');
+  $('result').textContent = d.result;
+  $('stats').innerHTML = '';
+  for (const k in d.stats) {
+    const el = document.createElement('div'); el.className = 'stat';
+    el.innerHTML = '<b></b><span></span>'; el.firstChild.textContent = d.stats[k]; el.lastChild.textContent = k;
+    $('stats').appendChild(el);
+  }
+  const c = d.complexity;
+  $('cx').innerHTML = `<tr><th>Best</th><th>Average</th><th>Worst</th><th>Space</th></tr><tr><td>${c.best}</td><td>${c.average}</td><td>${c.worst}</td><td>${c.space}</td></tr><tr><td colspan="4" style="color:var(--mut)">${c.note}</td></tr>`;
+  steps = d.steps; view = d.view; cur = 0;
+  $('steps').innerHTML = '';
+  steps.forEach((s, i) => {
+    const el = document.createElement('div'); el.textContent = (i + 1) + '. ' + s.text; el.onclick = () => show(i); $('steps').appendChild(el);
+  });
+  $('dropped').textContent = d.dropped ? `Showing the first ${steps.length} steps; ${d.dropped} more steps ran but are not displayed. Counts and time cover the whole run.` : '';
+  $('vizCard').classList.toggle('hidden', view === 'none' && steps.length === 0);
+  show(0);
+}
+
+function show(i) {
+  if (!steps.length) { $('stepText').textContent = 'No steps recorded'; $('viz').innerHTML = ''; return; }
+  cur = Math.max(0, Math.min(steps.length - 1, i));
+  const s = steps[cur];
+  $('stepInfo').textContent = `Step ${cur + 1} / ${steps.length}`;
+  $('stepText').textContent = s.text;
+  [...$('steps').children].forEach((el, k) => el.classList.toggle('on', k === cur));
+  const sel = $('steps').children[cur]; if (sel) sel.scrollIntoView({ block: 'nearest' });
+  const viz = $('viz'); viz.innerHTML = '';
+  if (view === 'none' || !s.arr) return;
+  if (view === 'bars') {
+    let min = Infinity, max = -Infinity;
+    s.arr.forEach(v => { if (v < min) min = v; if (v > max) max = v; });
+    s.arr.forEach((v, k) => {
+      const b = document.createElement('div'); b.className = 'bar' + (s.marks.indexOf(k) !== -1 ? ' m' : '');
+      b.style.height = (max === min ? 60 : 8 + ((v - min) / (max - min)) * 92) + '%'; b.title = v;
+      if (s.arr.length <= 30) { b.style.color = '#fff'; b.innerHTML = `<span style="position:absolute;top:-16px;left:0;right:0;text-align:center;font-size:11px;color:var(--txt)">${v}</span>`; }
+      viz.appendChild(b);
+    });
+  } else {
+    if (!s.arr.length) viz.innerHTML = '<span style="color:var(--mut)">(empty)</span>';
+    s.arr.forEach(v => { const b = document.createElement('div'); b.className = 'box'; b.textContent = v; viz.appendChild(b); });
+  }
+}
+function step(n) { stop(); show(cur + n); }
+function stop() { if (timer) { clearInterval(timer); timer = null; $('playBtn').textContent = 'Play'; } }
+function play() {
+  if (timer) return stop();
+  if (cur >= steps.length - 1) cur = -1;
+  $('playBtn').textContent = 'Pause';
+  timer = setInterval(() => { if (cur >= steps.length - 1) return stop(); show(cur + 1); }, 400);
+}
+</script>
+</body>
+</html>
