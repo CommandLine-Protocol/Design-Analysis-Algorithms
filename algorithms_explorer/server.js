@@ -1,7 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { handle } = require('../../algorithms');
+const { handle } = require('./algorithms');
 
 const page = fs.readFileSync(path.join(__dirname, 'index.html'));
 
