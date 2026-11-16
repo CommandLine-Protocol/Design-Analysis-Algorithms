@@ -8,9 +8,16 @@ class Recorder {
   add(text, arr, marks) {
     if (!this.on) return;
     if (this.steps.length >= this.max) { this.dropped++; return; }
+    let a = null;
+    if (arr) {
+      if (typeof arr.toArray === 'function') a = arr.toArray();
+      else if (Array.isArray(arr)) a = arr.slice();
+      else if (typeof arr === 'object') a = JSON.parse(JSON.stringify(arr));
+      else a = arr;
+    }
     this.steps.push({
       text: typeof text === 'function' ? text() : text,
-      arr: arr ? arr.toArray() : null,
+      arr: a,
       marks: marks || []
     });
   }
@@ -220,7 +227,20 @@ function hanoi(n, from, to, via, d, c) {
   if (n === 0) return;
   hanoi(n - 1, from, via, to, d + 1, c);
   c.ops++; c.moves++;
-  if (c.rec.on) c.rec.add(() => `Move ${c.moves}: disk ${n} from ${from} to ${to}`);
+  if (c.pegs) {
+    c.pegs[from].pop();
+    c.pegs[to].push(n);
+  }
+  if (c.rec.on) {
+    const snap = {
+      A: c.pegs.A.toArray(),
+      B: c.pegs.B.toArray(),
+      C: c.pegs.C.toArray(),
+      total: c.totalDisks,
+      move: { disk: n, from, to }
+    };
+    c.rec.add(() => `Move ${c.moves}: disk ${n} from ${from} to ${to}`, snap, [from, to]);
+  }
   hanoi(n - 1, via, to, from, d + 1, c);
 }
 
@@ -269,8 +289,27 @@ function runRecursion(q) {
     else if (alg === 'fibmemo') {
       const memo = new MyArray(); for (let i = 0; i <= n; i++) memo.push(-1);
       result = `fib(${n}) = ${fibMemo(n, 0, c, memo)}`;
-    } else if (alg === 'hanoi') { hanoi(n, 'A', 'C', 'B', 0, c); result = `${c.moves} moves (2^${n} - 1 = ${Math.pow(2, n) - 1})`; }
-    else {
+    } else if (alg === 'hanoi') {
+      const pegs = { A: new MyArray(), B: new MyArray(), C: new MyArray() };
+      for (let i = n; i >= 1; i--) pegs.A.push(i);
+      c.pegs = pegs;
+      c.totalDisks = n;
+      if (rec.on) {
+        rec.add(
+          `Initial state: all ${n} disks on Peg A`,
+          {
+            A: pegs.A.toArray(),
+            B: pegs.B.toArray(),
+            C: pegs.C.toArray(),
+            total: n,
+            move: null
+          },
+          ['A']
+        );
+      }
+      hanoi(n, 'A', 'C', 'B', 0, c);
+      result = `${c.moves} moves (2^${n} - 1 = ${Math.pow(2, n) - 1})`;
+    } else {
       const idx = binSearch(arr, 0, arr.length - 1, target, 0, c);
       result = idx === -1 ? `${target} not found in sorted list [${arr.toArray().join(', ')}]`
         : `${target} found at index ${idx} of sorted list [${arr.toArray().join(', ')}]`;
@@ -282,7 +321,7 @@ function runRecursion(q) {
   const rec = new Recorder(true, 300);
   const shown = exec(rec);
   return {
-    view: 'none', result: shown.result,
+    view: alg === 'hanoi' ? 'hanoi' : 'none', result: shown.result,
     steps: rec.steps.toArray(), dropped: rec.dropped,
     stats: {
       'Recursive calls': shown.c.calls, 'Max recursion depth': shown.c.maxDepth,
