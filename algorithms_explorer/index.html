@@ -180,7 +180,7 @@
       display: flex;
       align-items: flex-end;
       gap: 2px;
-      height: 180px;
+      min-height: 190px;
       padding: 8px 0;
     }
 
@@ -202,6 +202,103 @@
       align-self: center;
       flex: 0 0 auto;
       font-family: monospace;
+    }
+
+    /* Tower of Hanoi (MathsIsFun style matching 3 T-pegs) */
+    .hanoi-stage {
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-end;
+      width: 100%;
+      min-height: 185px;
+      padding: 6px 0 0;
+      user-select: none;
+    }
+
+    .hanoi-peg-col {
+      flex: 1;
+      max-width: 240px;
+      margin: 0 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .hanoi-stand {
+      position: relative;
+      width: 100%;
+      height: 155px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    /* Reddish-orange rod & base with blue border matching the user's stands */
+    .hanoi-rod {
+      position: absolute;
+      bottom: 12px;
+      width: 12px;
+      height: 135px;
+      background: #de3c2c;
+      border: 2px solid #1e40af;
+      border-radius: 6px 6px 0 0;
+      z-index: 1;
+      box-sizing: border-box;
+    }
+
+    .hanoi-base {
+      width: 100%;
+      max-width: 200px;
+      height: 14px;
+      background: #de3c2c;
+      border: 2px solid #1e40af;
+      border-radius: 7px;
+      z-index: 3;
+      box-sizing: border-box;
+    }
+
+    .hanoi-disks {
+      position: absolute;
+      bottom: 14px;
+      width: 100%;
+      max-width: 200px;
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+      z-index: 2;
+    }
+
+    .hanoi-disk {
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 11px;
+      margin-bottom: 2px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(0, 0, 0, 0.25);
+      transition: width 0.15s ease, background 0.15s ease;
+      box-sizing: border-box;
+    }
+
+    .hanoi-disk.moved {
+      box-shadow: 0 0 10px #f59e0b, 0 2px 4px rgba(0, 0, 0, 0.4);
+      outline: 2px solid #f59e0b;
+    }
+
+    .hanoi-name {
+      margin-top: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--txt);
+      text-align: center;
+    }
+
+    .hanoi-name.active {
+      color: var(--hot);
     }
 
     #steps {
@@ -304,16 +401,19 @@
         <div class="stats" id="stats"></div>
       </div>
       <div class="card" id="vizCard">
-        <div class="ctl">
-          <button class="sec" onclick="step(-1)">Prev</button>
-          <button class="sec" onclick="step(1)">Next</button>
-          <button class="sec" id="playBtn" onclick="play()">Play</button>
-          <span id="stepInfo" style="color: var(--mut)"></span>
-        </div>
-        <div id="stepText" style="margin-bottom: 6px"></div>
         <div id="viz"></div>
       </div>
-      <div class="card"><b>Steps taken</b>
+      <div class="card" id="stepsCard">
+        <div class="ctl" style="justify-content: space-between; align-items: center;">
+          <b>Steps taken</b>
+          <div>
+            <button class="sec" onclick="step(-1)">Prev</button>
+            <button class="sec" onclick="step(1)">Next</button>
+            <button class="sec" id="playBtn" onclick="play()">Play</button>
+            <span id="stepInfo" style="color: var(--mut); margin-left: 8px;"></span>
+          </div>
+        </div>
+        <div id="stepText" style="margin: 8px 0; font-family: ui-monospace, monospace; color: var(--hot); font-weight: 500; min-height: 20px;"></div>
         <div id="steps" style="margin-top: 6px"></div>
         <div id="dropped" style="color: var(--mut); font-size: 12px; margin-top: 4px"></div>
       </div>
@@ -392,7 +492,10 @@
 
     async function onRunRec() {
       const d = await apiCall({ type: 'recursion', algorithm: $('r-alg').value, n: $('r-n').value, input: $('r-list').value, target: $('r-target').value });
-      if (d) render(d);
+      if (d) {
+        render(d);
+        play();
+      }
     }
 
     async function onRunDS() {
@@ -447,12 +550,13 @@
         $('steps').appendChild(el);
       });
       $('dropped').textContent = d.dropped ? `Showing the first ${steps.length} steps; ${d.dropped} more steps ran but are not displayed. Counts and time cover the whole run.` : '';
-      $('vizCard').classList.toggle('hidden', view === 'none' && steps.length === 0);
+      $('vizCard').classList.toggle('hidden', view === 'none');
       show(0);
     }
 
     function show(i) {
       if (!steps.length) {
+        $('stepInfo').textContent = '';
         $('stepText').textContent = 'No steps recorded';
         $('viz').innerHTML = '';
         return;
@@ -484,6 +588,8 @@
           }
           viz.appendChild(b);
         });
+      } else if (view === 'hanoi') {
+        renderHanoi(s.arr);
       } else {
         if (!s.arr.length) viz.innerHTML = '<span style="color: var(--mut)">(empty)</span>';
         s.arr.forEach(v => {
@@ -493,6 +599,67 @@
           viz.appendChild(b);
         });
       }
+    }
+
+    const HANOI_COLORS = [
+      '#ef4444', '#f97316', '#f59e0b', '#10b981', '#06b6d4',
+      '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#84cc16'
+    ];
+
+    function renderHanoi(snap) {
+      const viz = $('viz');
+      viz.innerHTML = '';
+      if (!snap) return;
+
+      const total = snap.total || 3;
+      const diskH = Math.min(22, Math.max(12, Math.floor(115 / total)));
+      const stage = document.createElement('div');
+      stage.className = 'hanoi-stage';
+
+      const pegNames = ['A', 'B', 'C'];
+      pegNames.forEach(p => {
+        const col = document.createElement('div');
+        col.className = 'hanoi-peg-col';
+
+        const stand = document.createElement('div');
+        stand.className = 'hanoi-stand';
+
+        const rod = document.createElement('div');
+        rod.className = 'hanoi-rod';
+        stand.appendChild(rod);
+
+        const disksWrap = document.createElement('div');
+        disksWrap.className = 'hanoi-disks';
+
+        const disks = snap[p] || [];
+        disks.forEach(d => {
+          const diskEl = document.createElement('div');
+          const isMoved = snap.move && snap.move.disk === d && snap.move.to === p;
+          diskEl.className = 'hanoi-disk' + (isMoved ? ' moved' : '');
+          const pct = total === 1 ? 60 : 28 + ((d - 1) / (total - 1)) * 68;
+          diskEl.style.width = pct + '%';
+          diskEl.style.height = diskH + 'px';
+          diskEl.style.backgroundColor = HANOI_COLORS[(d - 1) % HANOI_COLORS.length];
+          if (diskH >= 13) diskEl.textContent = d;
+          disksWrap.appendChild(diskEl);
+        });
+        stand.appendChild(disksWrap);
+
+        const base = document.createElement('div');
+        base.className = 'hanoi-base';
+        stand.appendChild(base);
+
+        const nameEl = document.createElement('div');
+        const isActive = snap.move && (snap.move.from === p || snap.move.to === p);
+        nameEl.className = 'hanoi-name' + (isActive ? ' active' : '');
+        nameEl.textContent = `Peg ${p} (${disks.length})`;
+
+        col.appendChild(stand);
+        col.appendChild(nameEl);
+        stage.appendChild(col);
+      });
+
+      viz.appendChild(stage);
     }
 
     function step(n) {
@@ -515,7 +682,7 @@
       timer = setInterval(() => {
         if (cur >= steps.length - 1) return stop();
         show(cur + 1);
-      }, 400);
+      }, 800);
     }
   </script>
 </body>
