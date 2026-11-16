@@ -8,7 +8,11 @@ Group Work and Project
 - Shalom Asiimwe ([@print-shalom](https://github.com/print-shalom))
 - Emilly Sendikaddiwa ([@emillysendi](https://github.com/emillysendi))
 
-## Running the Algorithm Explorer
+## Live Demo
+The Algorithm Explorer is hosted on GitHub Pages:
+ [https://commandline-protocol.github.io/Design-Analysis-Algorithms/algorithms_explorer/](https://commandline-protocol.github.io/Design-Analysis-Algorithms/algorithms_explorer/)
+
+## Running Locally
 
 1. Navigate to the `algorithms_explorer` directory:
    ```bash
