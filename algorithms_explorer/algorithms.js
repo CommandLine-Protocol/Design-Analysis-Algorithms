@@ -116,19 +116,27 @@ function mergeSort(a, lo, hi, c) {
 }
 
 function quickSort(a, lo, hi, c) {
-  if (lo >= hi) return;
-  const m = Math.floor((lo + hi) / 2);
-  if (m !== hi) swap(a, m, hi, c);        // middle element as pivot
-  const pivot = a.get(hi);
-  let i = lo;
-  for (let j = lo; j < hi; j++) {
-    c.comparisons++;
-    if (a.get(j) < pivot) { if (i !== j) swap(a, i, j, c); i++; }
+  while (lo < hi) {
+    const m = Math.floor((lo + hi) / 2);
+    if (m !== hi) swap(a, m, hi, c);        // middle element as pivot
+    const pivot = a.get(hi);
+    let i = lo;
+    for (let j = lo; j < hi; j++) {
+      c.comparisons++;
+      if (a.get(j) < pivot) { if (i !== j) swap(a, i, j, c); i++; }
+    }
+    if (i !== hi) swap(a, i, hi, c);
+    if (c.rec.on) c.rec.add(`Pivot ${pivot} placed at position ${i} (range ${lo}..${hi})`, a, [i]);
+    
+    // Recurse on the smaller partition and loop on the larger partition to guarantee max stack depth O(log n)
+    if (i - lo < hi - i) {
+      quickSort(a, lo, i - 1, c);
+      lo = i + 1;
+    } else {
+      quickSort(a, i + 1, hi, c);
+      hi = i - 1;
+    }
   }
-  if (i !== hi) swap(a, i, hi, c);
-  if (c.rec.on) c.rec.add(`Pivot ${pivot} placed at position ${i} (range ${lo}..${hi})`, a, [i]);
-  quickSort(a, lo, i - 1, c);
-  quickSort(a, i + 1, hi, c);
 }
 
 const SORTS = {

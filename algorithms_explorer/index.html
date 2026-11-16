@@ -256,7 +256,7 @@
       <label>Numbers (separated by spaces or commas, max 5000)</label>
       <textarea id="s-in">64 25 12 22 11 90 5 38</textarea>
       <button class="sec" onclick="randomList()">Random 20 numbers</button>
-      <br><button class="go" onclick="runSort()">Run</button>
+      <br><button class="go" onclick="onRunSort()">Run</button>
     </div>
 
     <div class="card hidden" id="p-recursion">
@@ -273,7 +273,7 @@
         <div><label>List (will be sorted first)</label><input id="r-list" value="9 3 7 1 5 11 2"></div>
         <div><label>Target</label><input id="r-target" type="number" value="7"></div>
       </div>
-      <button class="go" onclick="runRec()">Run</button>
+      <button class="go" onclick="onRunRec()">Run</button>
     </div>
 
     <div class="card hidden" id="p-ds">
@@ -285,13 +285,13 @@
       </select>
       <label id="d-hint"></label>
       <textarea id="d-cmd">push 5; push 8; push 2; peek; pop; size</textarea>
-      <button class="go" onclick="runDS()">Run</button>
+      <button class="go" onclick="onRunDS()">Run</button>
     </div>
 
     <div class="card hidden" id="p-benchmark">
       <p>Runs all five sorting algorithms on random data of size 100, 500, 1000, 2000 and 4000 and shows operations and
         time, so you can see O(n²) against O(n log n) grow.</p>
-      <button class="go" onclick="runBench()">Run benchmark</button>
+      <button class="go" onclick="onRunBench()">Run benchmark</button>
     </div>
 
     <div id="err"></div>
@@ -369,7 +369,7 @@
     }
     dsHint();
 
-    async function call(payload) {
+    async function apiCall(payload) {
       $('err').textContent = '';
       try {
         if (typeof handle === 'function') {
@@ -385,23 +385,23 @@
       }
     }
 
-    async function runSort() {
-      const d = await call({ type: 'sort', algorithm: $('s-alg').value, input: $('s-in').value });
+    async function onRunSort() {
+      const d = await apiCall({ type: 'sort', algorithm: $('s-alg').value, input: $('s-in').value });
       if (d) render(d);
     }
 
-    async function runRec() {
-      const d = await call({ type: 'recursion', algorithm: $('r-alg').value, n: $('r-n').value, input: $('r-list').value, target: $('r-target').value });
+    async function onRunRec() {
+      const d = await apiCall({ type: 'recursion', algorithm: $('r-alg').value, n: $('r-n').value, input: $('r-list').value, target: $('r-target').value });
       if (d) render(d);
     }
 
-    async function runDS() {
-      const d = await call({ type: 'ds', structure: $('d-st').value, commands: $('d-cmd').value });
+    async function onRunDS() {
+      const d = await apiCall({ type: 'ds', structure: $('d-st').value, commands: $('d-cmd').value });
       if (d) render(d);
     }
 
-    async function runBench() {
-      const d = await call({ type: 'benchmark' });
+    async function onRunBench() {
+      const d = await apiCall({ type: 'benchmark' });
       if (!d) return;
       $('out').classList.add('hidden');
       let h = '<b>Operations (comparisons + writes) and running time in ms, random data</b><table style="margin-top: 8px"><tr><th>n</th>';
