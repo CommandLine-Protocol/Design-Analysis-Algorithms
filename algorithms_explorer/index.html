@@ -3,17 +3,23 @@
 
 <head>
   <meta charset="utf-8">
-  <title>Algorithm Explorer</title>
+  <title>Algorithm Explorer Group 2</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     :root {
-      --bg: #0f172a;
+      --bg: #0b1120;
       --card: #1e293b;
+      --card-alt: #162032;
       --line: #334155;
-      --txt: #e2e8f0;
+      --txt: #f8fafc;
       --mut: #94a3b8;
       --acc: #38bdf8;
+      --acc-hover: #0284c7;
       --hot: #f59e0b;
+      --green: #10b981;
+      --yellow: #eab308;
+      --red: #ef4444;
+      --purple: #a855f7;
     }
 
     * {
@@ -22,62 +28,159 @@
 
     body {
       margin: 0;
-      font-family: system-ui, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
       color: var(--txt);
+      line-height: 1.5;
     }
 
     header {
-      padding: 16px 24px;
+      padding: 18px 24px;
       border-bottom: 1px solid var(--line);
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
     }
 
-    h1 {
+    .brand h1 {
       margin: 0;
       font-size: 20px;
+      font-weight: 700;
+      color: var(--txt);
+      letter-spacing: -0.02em;
+    }
+
+    .brand p {
+      margin: 2px 0 0;
+      font-size: 13px;
+      color: var(--mut);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--acc);
+      border: 1px solid rgba(56, 189, 248, 0.3);
     }
 
     main {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 16px;
+      padding: 20px 16px 60px;
     }
 
-    .tabs {
+    /* Main Navigation Tabs */
+    .nav-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 12px;
+    }
+
+    .nav-tabs button {
+      background: var(--card);
+      color: var(--mut);
+      border: 1px solid var(--line);
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-tabs button:hover {
+      color: var(--txt);
+      border-color: var(--acc);
+    }
+
+    .nav-tabs button.active {
+      background: var(--acc);
+      color: #0b1120;
+      border-color: var(--acc);
+      font-weight: 700;
+    }
+
+    /* Sub Tabs */
+    .sub-tabs {
       display: flex;
       gap: 8px;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
       flex-wrap: wrap;
     }
 
-    .tabs button {
-      background: var(--card);
-      color: var(--txt);
+    .sub-tabs button {
+      background: var(--card-alt);
+      color: var(--mut);
       border: 1px solid var(--line);
-      padding: 8px 14px;
+      padding: 6px 14px;
       border-radius: 6px;
+      font-size: 13px;
       cursor: pointer;
+      transition: all 0.15s;
     }
 
-    .tabs button.on {
-      background: var(--acc);
-      color: #0f172a;
+    .sub-tabs button:hover {
+      color: var(--txt);
+    }
+
+    .sub-tabs button.active {
+      background: var(--line);
+      color: var(--txt);
+      border-color: var(--acc);
       font-weight: 600;
     }
 
+    /* Cards */
     .card {
       background: var(--card);
       border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 14px;
-      margin-bottom: 12px;
+      border-radius: 10px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
     }
 
+    .card h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card p.desc {
+      margin: 0 0 16px;
+      font-size: 13.5px;
+      color: var(--mut);
+    }
+
+    /* Form Inputs */
     label {
       display: block;
-      font-size: 13px;
+      font-size: 12.5px;
+      font-weight: 600;
       color: var(--mut);
-      margin: 8px 0 4px;
+      margin: 10px 0 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
 
     select,
@@ -88,536 +191,1151 @@
       color: var(--txt);
       border: 1px solid var(--line);
       border-radius: 6px;
-      padding: 8px;
+      padding: 9px 12px;
       font: inherit;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+
+    select:focus,
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--acc);
     }
 
     textarea {
-      min-height: 70px;
+      min-height: 75px;
       font-family: ui-monospace, monospace;
+      resize: vertical;
     }
 
     .row {
       display: flex;
-      gap: 10px;
+      gap: 12px;
       flex-wrap: wrap;
     }
 
     .row>* {
       flex: 1;
-      min-width: 160px;
+      min-width: 180px;
     }
 
-    button.go {
+    /* Buttons */
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+      align-items: center;
+    }
+
+    button.btn-primary {
       background: var(--acc);
-      color: #0f172a;
+      color: #0b1120;
       border: 0;
       padding: 9px 18px;
       border-radius: 6px;
       font-weight: 600;
+      font-size: 14px;
       cursor: pointer;
-      margin-top: 10px;
+      transition: background 0.15s;
     }
 
-    button.sec {
-      background: transparent;
+    button.btn-primary:hover {
+      background: var(--acc-hover);
+    }
+
+    button.btn-sec {
+      background: var(--card-alt);
+      color: var(--txt);
+      border: 1px solid var(--line);
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 13.5px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    button.btn-sec:hover {
+      border-color: var(--acc);
       color: var(--acc);
-      border: 1px solid var(--acc);
-      padding: 8px 12px;
+    }
+
+    button.btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      padding: 8px 14px;
       border-radius: 6px;
       cursor: pointer;
+    }
+
+    button.btn-danger:hover {
+      background: rgba(239, 68, 68, 0.3);
+    }
+
+    /* Alerts */
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      margin: 12px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .alert-error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+    }
+
+    .alert-warning {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fcd34d;
+    }
+
+    .alert-info {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #7dd3fc;
+    }
+
+    .alert-success {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #6ee7b7;
     }
 
     .hidden {
-      display: none;
+      display: none !important;
     }
 
-    #err {
-      color: #f87171;
-      margin: 6px 0;
-      min-height: 18px;
+    /* Stat Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin: 14px 0;
     }
 
-    .stats {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .stat {
+    .stat-box {
       background: var(--bg);
       border: 1px solid var(--line);
-      border-radius: 6px;
-      padding: 8px 12px;
-      min-width: 140px;
+      border-radius: 8px;
+      padding: 12px 14px;
     }
 
-    .stat b {
-      display: block;
-      font-size: 18px;
-      color: var(--acc);
+    .stat-box .val {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--txt);
+      word-break: break-all;
     }
 
-    .stat span {
+    .stat-box .lbl {
       font-size: 12px;
       color: var(--mut);
+      margin-top: 2px;
+      text-transform: uppercase;
     }
 
-    table {
+    /* Side-by-side Table */
+    table.data-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 14px;
+      font-size: 13.5px;
+      margin-top: 10px;
     }
 
-    th,
-    td {
-      border-bottom: 1px solid var(--line);
-      padding: 6px 8px;
+    table.data-table th,
+    table.data-table td {
+      border: 1px solid var(--line);
+      padding: 9px 12px;
       text-align: left;
     }
 
+    table.data-table th {
+      background: var(--card-alt);
+      color: var(--mut);
+      font-weight: 600;
+    }
+
+    table.data-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* Sorting Bar Visualizer */
     #viz {
       display: flex;
       align-items: flex-end;
-      gap: 2px;
-      min-height: 190px;
-      padding: 8px 0;
+      gap: 3px;
+      height: 220px;
+      padding: 24px 8px 8px;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 12px 0;
     }
 
-    #viz .bar {
+    .bar {
       flex: 1;
+      min-width: 12px;
       background: var(--acc);
-      min-width: 2px;
+      border-radius: 3px 3px 0 0;
       position: relative;
+      transition: height 0.15s ease, background 0.15s;
     }
 
-    #viz .bar.m {
-      background: var(--hot);
+    .bar.compare {
+      background: var(--yellow) !important;
     }
 
-    #viz .box {
-      padding: 8px 12px;
-      border: 1px solid var(--acc);
-      border-radius: 4px;
-      align-self: center;
-      flex: 0 0 auto;
-      font-family: monospace;
+    .bar.swap {
+      background: var(--red) !important;
     }
 
-    /* Tower of Hanoi (MathsIsFun style matching 3 T-pegs) */
+    .bar.yellow-zone {
+      background: var(--yellow) !important;
+    }
+
+    .bar.green-zone {
+      background: var(--green) !important;
+    }
+
+    .bar.pivot {
+      background: var(--purple) !important;
+      outline: 2px solid #fff;
+    }
+
+    .bar-lbl {
+      position: absolute;
+      top: -18px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 10px;
+      color: var(--mut);
+      font-family: ui-monospace, monospace;
+    }
+
+    /* Hanoi Visualizer */
     .hanoi-stage {
       display: flex;
       justify-content: space-around;
       align-items: flex-end;
-      width: 100%;
-      min-height: 185px;
-      padding: 6px 0 0;
-      user-select: none;
+      height: 230px;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      margin: 12px 0;
     }
 
     .hanoi-peg-col {
       flex: 1;
-      max-width: 240px;
-      margin: 0 8px;
+      max-width: 220px;
       display: flex;
       flex-direction: column;
       align-items: center;
+      height: 100%;
     }
 
     .hanoi-stand {
       position: relative;
       width: 100%;
-      height: 155px;
+      height: 170px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-end;
     }
 
-    /* Reddish-orange rod & base with blue border matching the user's stands */
     .hanoi-rod {
       position: absolute;
       bottom: 12px;
-      width: 12px;
-      height: 135px;
-      background: #de3c2c;
-      border: 2px solid #1e40af;
-      border-radius: 6px 6px 0 0;
+      width: 8px;
+      height: 140px;
+      background: #475569;
+      border-radius: 4px;
       z-index: 1;
-      box-sizing: border-box;
     }
 
     .hanoi-base {
-      width: 100%;
-      max-width: 200px;
-      height: 14px;
-      background: #de3c2c;
-      border: 2px solid #1e40af;
-      border-radius: 7px;
-      z-index: 3;
-      box-sizing: border-box;
-    }
-
-    .hanoi-disks {
-      position: absolute;
-      bottom: 14px;
-      width: 100%;
-      max-width: 200px;
-      display: flex;
-      flex-direction: column-reverse;
-      align-items: center;
+      width: 85%;
+      height: 12px;
+      background: #334155;
+      border-radius: 4px;
       z-index: 2;
     }
 
+    .hanoi-disks {
+      width: 100%;
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+      z-index: 3;
+      margin-bottom: 2px;
+    }
+
     .hanoi-disk {
-      border-radius: 8px;
+      border-radius: 4px;
+      margin: 1px 0;
+      transition: all 0.2s ease;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #fff;
-      font-weight: 700;
-      font-size: 11px;
-      margin-bottom: 2px;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(0, 0, 0, 0.25);
-      transition: width 0.15s ease, background 0.15s ease;
-      box-sizing: border-box;
-    }
-
-    .hanoi-disk.moved {
-      box-shadow: 0 0 10px #f59e0b, 0 2px 4px rgba(0, 0, 0, 0.4);
-      outline: 2px solid #f59e0b;
     }
 
     .hanoi-name {
-      margin-top: 6px;
+      margin-top: 8px;
       font-size: 13px;
       font-weight: 600;
-      color: var(--txt);
-      text-align: center;
+      color: var(--mut);
     }
 
     .hanoi-name.active {
       color: var(--hot);
     }
 
-    #steps {
-      max-height: 260px;
-      overflow: auto;
+    /* Data Structures Visual Elements */
+    .ds-render-area {
+      min-height: 130px;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      margin: 14px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      overflow-x: auto;
+    }
+
+    .stack-col {
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 6px;
+      min-width: 120px;
+      padding: 8px;
+      border-left: 2px solid var(--line);
+      border-right: 2px solid var(--line);
+      border-bottom: 3px solid var(--line);
+      border-radius: 0 0 6px 6px;
+    }
+
+    .stack-slot {
+      height: 38px;
+      background: var(--card-alt);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
       font-family: ui-monospace, monospace;
-      font-size: 13px;
-      white-space: pre;
+      font-weight: 600;
     }
 
-    #steps div {
-      padding: 2px 6px;
-      cursor: pointer;
+    .stack-slot.top {
+      border-color: var(--acc);
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--acc);
     }
 
-    #steps div.on {
-      background: var(--line);
+    .queue-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .queue-slot {
+      width: 60px;
+      height: 60px;
+      background: var(--card-alt);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: ui-monospace, monospace;
+      position: relative;
+    }
+
+    .queue-slot.active {
+      border-color: var(--acc);
+      background: rgba(56, 189, 248, 0.1);
+    }
+
+    .queue-ptr {
+      position: absolute;
+      top: -18px;
+      font-size: 10px;
+      font-weight: 700;
       color: var(--hot);
     }
 
-    .ctl {
+    .queue-idx {
+      position: absolute;
+      bottom: -18px;
+      font-size: 10px;
+      color: var(--mut);
+    }
+
+    .node-box {
+      background: var(--card-alt);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 8px 14px;
       display: flex;
-      gap: 8px;
       align-items: center;
-      margin-bottom: 8px;
+      gap: 8px;
+      font-family: ui-monospace, monospace;
+      font-weight: 600;
+    }
+
+    .node-arrow {
+      color: var(--acc);
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    /* Steps Control */
+    .step-ctl {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .step-log {
+      max-height: 200px;
+      overflow-y: auto;
+      font-family: ui-monospace, monospace;
+      font-size: 12.5px;
+      padding: 8px;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      margin-top: 8px;
+    }
+
+    .step-log div {
+      padding: 3px 6px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .step-log div.active {
+      background: var(--line);
+      color: var(--hot);
+      font-weight: 600;
+    }
+
+    /* SVG Chart Containers */
+    .chart-container {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      margin: 14px 0;
+    }
+
+    svg.chart-svg {
+      width: 100%;
+      height: 280px;
+    }
+
+    svg text {
+      fill: var(--mut);
+      font-size: 11px;
+      font-family: system-ui, sans-serif;
+    }
+
+    svg line.grid {
+      stroke: rgba(51, 65, 85, 0.4);
+      stroke-dasharray: 4;
     }
   </style>
 </head>
 
 <body>
   <header>
-    <h1>Algorithm Explorer</h1>
+    <div class="brand">
+      <h1>Algorithm Explorer Group 2</h1>
+    </div>
   </header>
+
   <main>
-    <div class="tabs" id="tabs">
-      <button data-t="sort" class="on">Sorting</button>
-      <button data-t="recursion">Recursion</button>
-      <button data-t="ds">Data structures</button>
-      <button data-t="benchmark">Complexity benchmark</button>
-    </div>
+    <!-- Main Navigation -->
+    <nav class="nav-tabs" id="mainTabs">
+      <button class="active" data-module="moduleA">Recursion Lab</button>
+      <button data-module="moduleB">Data Structures Lab</button>
+      <button data-module="moduleC">Sorting Lab</button>
+      <button data-module="moduleD">Time Complexity Analysis</button>
+    </nav>
 
-    <div class="card" id="p-sort">
-      <label>Algorithm</label>
-      <select id="s-alg">
-        <option value="bubble">Bubble sort</option>
-        <option value="selection">Selection sort</option>
-        <option value="insertion">Insertion sort</option>
-        <option value="merge">Merge sort (recursive)</option>
-        <option value="quick">Quick sort (recursive)</option>
-      </select>
-      <label>Numbers (separated by spaces or commas, max 5000)</label>
-      <textarea id="s-in">64 25 12 22 11 90 5 38</textarea>
-      <button class="sec" onclick="randomList()">Random 20 numbers</button>
-      <br><button class="go" onclick="onRunSort()">Run</button>
-    </div>
+    <!-- Global Alert / Error Banner -->
+    <div id="globalError" class="alert alert-error hidden"></div>
 
-    <div class="card hidden" id="p-recursion">
-      <label>Algorithm</label>
-      <select id="r-alg" onchange="recUI()">
-        <option value="factorial">Factorial (n ≤ 100)</option>
-        <option value="fibonacci">Fibonacci, naive (n ≤ 32)</option>
-        <option value="fibmemo">Fibonacci, memoized (n ≤ 70)</option>
-        <option value="hanoi">Tower of Hanoi (n ≤ 20)</option>
-        <option value="binary">Binary search, recursive</option>
-      </select>
-      <div id="r-n-wrap"><label>n</label><input id="r-n" type="number" value="5"></div>
-      <div id="r-bin" class="hidden row">
-        <div><label>List (will be sorted first)</label><input id="r-list" value="9 3 7 1 5 11 2"></div>
-        <div><label>Target</label><input id="r-target" type="number" value="7"></div>
+    <!-- ==================================================================== -->
+    <!-- MODULE A: RECURSION LAB -->
+    <!-- ==================================================================== -->
+    <section id="moduleA">
+      <div class="sub-tabs" id="subTabsA">
+        <button class="active" data-sub="fibonacci">Fibonacci Numbers (3 Ways)</button>
+        <button data-sub="factorial">Factorial (Recursive vs Iterative)</button>
+        <button data-sub="hanoi">Tower of Hanoi (Animated)</button>
       </div>
-      <button class="go" onclick="onRunRec()">Run</button>
-    </div>
 
-    <div class="card hidden" id="p-ds">
-      <label>Structure</label>
-      <select id="d-st" onchange="dsHint()">
-        <option value="stack">Stack</option>
-        <option value="queue">Queue</option>
-        <option value="list">Linked list</option>
-      </select>
-      <label id="d-hint"></label>
-      <textarea id="d-cmd">push 5; push 8; push 2; peek; pop; size</textarea>
-      <button class="go" onclick="onRunDS()">Run</button>
-    </div>
+      <!-- Fibonacci Section -->
+      <div id="sec-fibonacci" class="card">
+        <h2>Fibonacci Numbers: Naive vs Memoized vs Bottom-Up DP</h2>
+        <p class="desc">
+          Compare the performance of computing the n-th Fibonacci number using:
+          (i) Naive tree recursion, (ii) Memoized recursion, and (iii) Bottom-up Dynamic Programming.
+        </p>
 
-    <div class="card hidden" id="p-benchmark">
-      <p>Runs all five sorting algorithms on random data of size 100, 500, 1000, 2000 and 4000 and shows operations and
-        time, so you can see O(n²) against O(n log n) grow.</p>
-      <button class="go" onclick="onRunBench()">Run benchmark</button>
-    </div>
-
-    <div id="err"></div>
-
-    <div id="out" class="hidden">
-      <div class="card"><b>Result</b>
-        <div id="result" style="margin-top: 6px; word-break: break-word"></div>
-      </div>
-      <div class="card">
-        <div class="stats" id="stats"></div>
-      </div>
-      <div class="card" id="vizCard">
-        <div id="viz"></div>
-      </div>
-      <div class="card" id="stepsCard">
-        <div class="ctl" style="justify-content: space-between; align-items: center;">
-          <b>Steps taken</b>
+        <div class="row">
           <div>
-            <button class="sec" onclick="step(-1)">Prev</button>
-            <button class="sec" onclick="step(1)">Next</button>
-            <button class="sec" id="playBtn" onclick="play()">Play</button>
-            <span id="stepInfo" style="color: var(--mut); margin-left: 8px;"></span>
+            <label for="fibN">Input n (0 to 1000)</label>
+            <input id="fibN" type="number" min="0" max="1000" value="15">
           </div>
         </div>
-        <div id="stepText" style="margin: 8px 0; font-family: ui-monospace, monospace; color: var(--hot); font-weight: 500; min-height: 20px;"></div>
-        <div id="steps" style="margin-top: 6px"></div>
-        <div id="dropped" style="color: var(--mut); font-size: 12px; margin-top: 4px"></div>
-      </div>
-      <div class="card"><b>Time complexity analysis</b>
-        <table id="cx" style="margin-top: 6px"></table>
-      </div>
-    </div>
 
-    <div id="benchOut" class="card hidden"></div>
+        <div class="btn-group">
+          <button class="btn-primary" onclick="onComputeFib()">Compute (All 3 Methods)</button>
+          <span style="font-size: 12.5px; color: var(--mut)">* Note: Naive recursion is capped at n ≤ 30 to prevent
+            exponential hang.</span>
+        </div>
+
+        <div id="fibOutput" class="hidden" style="margin-top: 18px;">
+          <div id="fibAlert" class="alert alert-warning"></div>
+
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Result</th>
+                <th>Basic Operations (Calls / Iterations)</th>
+                <th>Time (ms)</th>
+                <th>Time Complexity</th>
+                <th>Auxiliary Space</th>
+              </tr>
+            </thead>
+            <tbody id="fibTableBody"></tbody>
+          </table>
+
+          <div class="card" style="margin-top: 14px; background: var(--card-alt);">
+            <b>Explanation of Big-O Behavior:</b>
+            <p id="fibExplanation" style="margin: 6px 0 0; color: var(--mut); font-size: 13.5px;"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Factorial Section -->
+      <div id="sec-factorial" class="card hidden">
+        <h2>Factorial: Recursive vs Iterative Comparison</h2>
+        <p class="desc">
+          Compute n! using both recursive and iterative approaches. Inspect operation counts and call stack overhead.
+        </p>
+
+        <div class="row">
+          <div>
+            <label for="factN">Input n (0 to 500)</label>
+            <input id="factN" type="number" min="0" max="500" value="6">
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn-primary" onclick="onComputeFact()">Compute Factorial</button>
+        </div>
+
+        <div id="factOutput" class="hidden" style="margin-top: 18px;">
+          <div class="stat-box" style="margin-bottom: 12px;">
+            <div class="lbl">Result (n!)</div>
+            <div class="val" id="factResult" style="color: var(--acc); font-size: 22px;"></div>
+          </div>
+
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Approach</th>
+                <th>Operation Count</th>
+                <th>Execution Time</th>
+                <th>Time Complexity</th>
+                <th>Space Complexity</th>
+              </tr>
+            </thead>
+            <tbody id="factTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tower of Hanoi Section -->
+      <div id="sec-hanoi" class="card hidden">
+        <h2>Tower of Hanoi (Animated Puzzle Solver)</h2>
+        <p class="desc">
+          Select the number of disks and customize the Source, Destination, and Auxiliary pegs.
+          Watch the disks move smoothly with full playback controls while confirming total moves = 2ⁿ − 1.
+        </p>
+
+        <div class="row">
+          <div>
+            <label for="hanoiDisks">Number of Disks (1 to 8)</label>
+            <input id="hanoiDisks" type="number" min="1" max="8" value="3">
+          </div>
+          <div>
+            <label for="hanoiSource">Source Peg</label>
+            <select id="hanoiSource">
+              <option value="A" selected>Peg A</option>
+              <option value="B">Peg B</option>
+              <option value="C">Peg C</option>
+            </select>
+          </div>
+          <div>
+            <label for="hanoiDest">Destination Peg</label>
+            <select id="hanoiDest">
+              <option value="A">Peg A</option>
+              <option value="B">Peg B</option>
+              <option value="C" selected>Peg C</option>
+            </select>
+          </div>
+          <div>
+            <label for="hanoiAux">Auxiliary Peg</label>
+            <select id="hanoiAux">
+              <option value="A">Peg A</option>
+              <option value="B" selected>Peg B</option>
+              <option value="C">Peg C</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn-primary" onclick="onSetupHanoi()">Solve & Prepare Animation</button>
+        </div>
+
+        <div id="hanoiStageCard" class="hidden" style="margin-top: 16px;">
+          <div class="step-ctl">
+            <div>
+              <button class="btn-primary" id="hanoiPlayBtn" onclick="toggleHanoiPlay()">Auto-Play</button>
+              <button class="btn-sec" onclick="stepHanoi(-1)">Prev</button>
+              <button class="btn-sec" onclick="stepHanoi(1)">Next</button>
+              <button class="btn-sec" onclick="resetHanoi()">Reset</button>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 12.5px; color: var(--mut)">Speed:</span>
+              <input type="range" id="hanoiSpeed" min="100" max="1200" step="100" value="500" style="width: 100px;">
+              <span id="hanoiStepCounter"
+                style="font-size: 13px; font-weight: 600; color: var(--acc); min-width: 110px;"></span>
+            </div>
+          </div>
+
+          <div id="hanoiMoveText"
+            style="font-family: ui-monospace, monospace; color: var(--hot); margin: 8px 0; font-weight: 600;"></div>
+
+          <div id="hanoiViz" class="hanoi-stage"></div>
+
+          <div id="hanoiFormulaConfirm" class="alert alert-success"></div>
+
+          <div class="step-log" id="hanoiStepLog"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================== -->
+    <!-- MODULE B: DATA STRUCTURES LAB -->
+    <!-- ==================================================================== -->
+    <section id="moduleB" class="hidden">
+      <div class="sub-tabs" id="subTabsB">
+        <button class="active" data-ds="stack">Stack (Fixed Array)</button>
+        <button data-ds="linearQueue">Linear Queue (False Full)</button>
+        <button data-ds="circularQueue">Circular Queue (Wrap-Around)</button>
+        <button data-ds="singly">Singly Linked List</button>
+        <button data-ds="doubly">Doubly Linked List</button>
+        <button data-ds="brackets">Balanced Brackets Application</button>
+      </div>
+
+      <!-- General DS Card -->
+      <div class="card" id="dsMainCard">
+        <h2 id="dsTitle">Stack (Array-Based)</h2>
+        <p class="desc" id="dsDesc">
+          Fixed-capacity stack built on a plain array from first principles. Test push, pop, peek, overflow, and
+          underflow.
+        </p>
+
+        <!-- Capacity configuration (for Stack & Queues) -->
+        <div id="dsCapacityRow" class="row" style="margin-bottom: 12px;">
+          <div>
+            <label for="dsCap">Capacity</label>
+            <input id="dsCap" type="number" min="2" max="15" value="5">
+          </div>
+          <div style="display: flex; align-items: flex-end;">
+            <button class="btn-sec" onclick="reinitCurrentDS()">Initialize Structure</button>
+          </div>
+        </div>
+
+        <!-- Input value row -->
+        <div class="row">
+          <div>
+            <label for="dsVal">Element Value</label>
+            <input id="dsVal" type="number" placeholder="e.g. 42">
+          </div>
+          <div id="dsTargetWrap" class="hidden">
+            <label for="dsTarget">Target Element (Before/After)</label>
+            <input id="dsTarget" type="number" placeholder="Target value in list">
+          </div>
+        </div>
+
+        <!-- Interactive Buttons Container -->
+        <div class="btn-group" id="dsButtons"></div>
+
+        <!-- Status Message Banner -->
+        <div id="dsStatusAlert" class="alert alert-info" style="margin-top: 14px;">Ready.</div>
+
+        <!-- Visual Render Stage -->
+        <label>Visual Structure State</label>
+        <div id="dsRenderArea" class="ds-render-area"></div>
+
+        <!-- Metrics & Details -->
+        <div class="stats-grid" id="dsStatsGrid"></div>
+      </div>
+
+      <!-- Balanced Brackets Application Card -->
+      <div class="card hidden" id="sec-brackets">
+        <h2>Stack Application: Balanced Brackets Checker</h2>
+        <p class="desc">
+          Uses our custom fixed-capacity ArrayStack to parse bracket expressions such as <code>{ ( [ ] ) }</code>.
+          Step through symbol-by-symbol to inspect how matching brackets push and pop from the stack.
+        </p>
+
+        <div class="row">
+          <div style="flex: 2;">
+            <label for="bracketInput">Bracket Expression</label>
+            <input id="bracketInput" value="{ [ ( ) ] }">
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn-primary" onclick="onCheckBrackets()">Check Expression</button>
+          <button class="btn-sec" onclick="setBracketPreset('{ ( [ ] ) }')">Preset: Valid { ( [ ] ) }</button>
+          <button class="btn-sec" onclick="setBracketPreset('( [ ) ]')">Preset: Mismatch ( [ ) ]</button>
+          <button class="btn-sec" onclick="setBracketPreset('(((')">Preset: Unclosed (((</button>
+        </div>
+
+        <div id="bracketOutput" class="hidden" style="margin-top: 16px;">
+          <div id="bracketResultBadge" class="alert"></div>
+
+          <div class="step-ctl">
+            <span style="font-size: 13px; font-weight: 600;">Step Playback:</span>
+            <div>
+              <button class="btn-sec" onclick="stepBracket(-1)">Prev</button>
+              <button class="btn-sec" onclick="stepBracket(1)">Next</button>
+              <span id="bracketStepInfo" style="font-size: 12.5px; color: var(--mut); margin-left: 6px;"></span>
+            </div>
+          </div>
+
+          <div id="bracketStepDetail"
+            style="font-family: ui-monospace, monospace; color: var(--hot); margin: 8px 0; font-weight: 600;"></div>
+
+          <div class="ds-render-area" id="bracketVizStack"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================== -->
+    <!-- MODULE C: SORTING LAB -->
+    <!-- ==================================================================== -->
+    <section id="moduleC" class="hidden">
+      <div class="card">
+        <h2>Sorting Algorithms Lab</h2>
+        <p class="desc">
+          Explore first-principles implementations of Bubble, Selection, Insertion, Merge, and Quicksort
+          (featuring the course first-element pivot with Yellow/Green partition and randomised pivot).
+        </p>
+
+        <div class="row">
+          <div style="flex: 2;">
+            <label for="sortInput">Numbers to Sort (separated by space or comma)</label>
+            <textarea id="sortInput">64 25 12 22 11 90 5 38</textarea>
+          </div>
+          <div>
+            <label for="sortAlg">Algorithm</label>
+            <select id="sortAlg">
+              <option value="bubble">Bubble Sort</option>
+              <option value="selection">Selection Sort</option>
+              <option value="insertion">Insertion Sort</option>
+              <option value="merge">Merge Sort (Recursive)</option>
+              <option value="quickFirst" selected>Quicksort (First Pivot, Yellow/Green)</option>
+              <option value="quickRandom">Quicksort (Randomised Pivot)</option>
+            </select>
+            <div style="margin-top: 10px;">
+              <button class="btn-sec" onclick="generateRandomSortData(15)">Random 15</button>
+              <button class="btn-sec" onclick="generateRandomSortData(30)">Random 30</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn-primary" onclick="onRunSort()">Run Single Sort</button>
+          <button class="btn-sec" style="border-color: var(--hot); color: var(--hot);"
+            onclick="onCompareAllSorts()">Compare All Sorts Side-by-Side</button>
+        </div>
+
+        <!-- Single Sort Visualizer Card -->
+        <div id="singleSortOut" class="hidden" style="margin-top: 18px;">
+          <div class="step-ctl">
+            <div>
+              <button class="btn-primary" id="sortPlayBtn" onclick="toggleSortPlay()">Play Auto</button>
+              <button class="btn-sec" onclick="stepSort(-1)">Prev</button>
+              <button class="btn-sec" onclick="stepSort(1)">Next</button>
+              <button class="btn-sec" onclick="resetSort()">Reset</button>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 12px; color: var(--mut)">Speed:</span>
+              <input type="range" id="sortSpeed" min="50" max="1000" step="50" value="400" style="width: 90px;">
+              <span id="sortStepInfo" style="font-size: 13px; font-weight: 600; color: var(--acc);"></span>
+            </div>
+          </div>
+
+          <div id="sortStepText"
+            style="font-family: ui-monospace, monospace; color: var(--hot); font-weight: 600; margin: 8px 0; min-height: 22px;">
+          </div>
+
+          <!-- Color Legend for Sorting -->
+          <div style="display: flex; gap: 14px; font-size: 12px; margin-bottom: 6px; flex-wrap: wrap;">
+            <span><span
+                style="display:inline-block;width:12px;height:12px;background:var(--acc);margin-right:4px;border-radius:2px;"></span>Default</span>
+            <span><span
+                style="display:inline-block;width:12px;height:12px;background:var(--yellow);margin-right:4px;border-radius:2px;"></span>Comparing
+              / Yellow Zone (≤ Pivot)</span>
+            <span><span
+                style="display:inline-block;width:12px;height:12px;background:var(--green);margin-right:4px;border-radius:2px;"></span>Green
+              Zone (> Pivot)</span>
+            <span><span
+                style="display:inline-block;width:12px;height:12px;background:var(--red);margin-right:4px;border-radius:2px;"></span>Swapping
+              / Moving</span>
+            <span><span
+                style="display:inline-block;width:12px;height:12px;background:var(--purple);margin-right:4px;border-radius:2px;"></span>Pivot</span>
+          </div>
+
+          <div id="viz"></div>
+
+          <div class="stats-grid" id="sortStatsGrid"></div>
+
+          <table class="data-table" id="sortComplexityTable" style="margin-top: 10px;"></table>
+
+          <div class="step-log" id="sortStepLog"></div>
+        </div>
+
+        <!-- Compare All Table -->
+        <div id="compareAllOut" class="hidden" style="margin-top: 20px;">
+          <h3>Side-by-Side Performance Comparison (Identical Input)</h3>
+          <p class="desc">Every algorithm ran on the exact same dataset. Notice the difference in comparisons and swaps!
+          </p>
+          <table class="data-table" id="compareTable">
+            <thead>
+              <tr>
+                <th>Algorithm</th>
+                <th>Comparisons</th>
+                <th>Swaps / Moves</th>
+                <th>Array Writes</th>
+                <th>Execution Time</th>
+                <th>Best Case</th>
+                <th>Average Case</th>
+                <th>Worst Case</th>
+                <th>Extra Space</th>
+                <th>Stable</th>
+              </tr>
+            </thead>
+            <tbody id="compareTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================================================================== -->
+    <!-- MODULE D: TIME COMPLEXITY ANALYSIS -->
+    <!-- ==================================================================== -->
+    <section id="moduleD" class="hidden">
+      <div class="card">
+        <h2>Time Complexity Analysis & Empirical Benchmark</h2>
+        <p class="desc">
+          Measure running times and operation counts experimentally across <strong>Random</strong>, <strong>Already
+            Sorted</strong>,
+          and <strong>Reverse Sorted</strong> inputs. Repeats each run 3 times and averages the results to verify Big-O
+          theory.
+        </p>
+
+        <div class="btn-group">
+          <button class="btn-primary" id="btnBenchRun" onclick="onRunBenchmark()">Run Benchmark Suite (3x
+            Averages)</button>
+          <span id="benchStatusText" style="font-size: 13px; color: var(--mut)">Ready to run.</span>
+        </div>
+
+        <div id="benchResultsCard" class="hidden" style="margin-top: 18px;">
+          <!-- SVG Charts Section -->
+          <div class="row">
+            <div class="chart-container">
+              <h4 style="margin: 0 0 10px; color: var(--acc);">Growth Chart: O(n²) Sorts (Random Input)</h4>
+              <svg id="chartN2" class="chart-svg"></svg>
+            </div>
+            <div class="chart-container">
+              <h4 style="margin: 0 0 10px; color: var(--green);">Growth Chart: O(n log n) Sorts (Random Input)</h4>
+              <svg id="chartNlogN" class="chart-svg"></svg>
+            </div>
+          </div>
+
+          <!-- Benchmark Tables by Input Type -->
+          <div class="sub-tabs" id="benchTabs" style="margin-top: 16px;">
+            <button class="active" data-btype="random">Random Input</button>
+            <button data-btype="sorted">Already Sorted Input</button>
+            <button data-btype="reverse">Reverse Sorted Input</button>
+            <button data-btype="large">Large n (50k & 100k)</button>
+          </div>
+
+          <table class="data-table" id="benchDataTable">
+            <thead id="benchTableHead"></thead>
+            <tbody id="benchTableBody"></tbody>
+          </table>
+
+          <!-- Theoretical Discussion -->
+          <div class="card" style="margin-top: 20px; background: var(--card-alt);">
+            <h3 style="margin-top: 0; color: var(--hot);">Theoretical Analysis & Discussion</h3>
+
+            <div style="margin-bottom: 12px;">
+              <b style="color: var(--txt);">1. Why Insertion Sort is O(n) on Sorted Input:</b>
+              <p style="margin: 4px 0; color: var(--mut); font-size: 13.5px;" id="discInsertion"></p>
+            </div>
+
+            <div style="margin-bottom: 12px;">
+              <b style="color: var(--txt);">2. Why First-Element Quicksort Degrades to O(n²) on Sorted/Reverse
+                Input:</b>
+              <p style="margin: 4px 0; color: var(--mut); font-size: 13.5px;" id="discQuickFirst"></p>
+            </div>
+
+            <div>
+              <b style="color: var(--txt);">3. How Randomised Pivot Resolves the Worst-Case:</b>
+              <p style="margin: 4px 0; color: var(--mut); font-size: 13.5px;" id="discQuickRandom"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <script src="ds.js"></script>
   <script src="algorithms.js"></script>
   <script>
+    // ========================================================================
+    // GLOBAL STATE & TAB NAVIGATION
+    // ========================================================================
     const $ = id => document.getElementById(id);
-    let steps = [], cur = 0, view = 'none', timer = null;
 
-    document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => {
-      document.querySelectorAll('#tabs button').forEach(x => x.classList.remove('on'));
-      b.classList.add('on');
-      ['sort', 'recursion', 'ds', 'benchmark'].forEach(t => $('p-' + t).classList.toggle('hidden', t !== b.dataset.t));
-      $('out').classList.add('hidden');
-      $('benchOut').classList.add('hidden');
-      $('err').textContent = '';
+    function showError(msg) {
+      const el = $('globalError');
+      if (!msg) {
+        el.classList.add('hidden');
+        el.textContent = '';
+      } else {
+        el.classList.remove('hidden');
+        el.textContent = 'Error: ' + msg;
+      }
+    }
+
+    // Main Tab Switching
+    document.querySelectorAll('#mainTabs button').forEach(btn => {
+      btn.onclick = () => {
+        showError('');
+        document.querySelectorAll('#mainTabs button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const mod = btn.dataset.module;
+        ['moduleA', 'moduleB', 'moduleC', 'moduleD'].forEach(m => {
+          $(m).classList.toggle('hidden', m !== mod);
+        });
+      };
     });
 
-    function randomList() {
-      let s = '';
-      for (let i = 0; i < 20; i++) s += (Math.floor(Math.random() * 99) + 1) + (i < 19 ? ' ' : '');
-      $('s-in').value = s;
-    }
+    // Sub Tab Switching for Module A
+    document.querySelectorAll('#subTabsA button').forEach(btn => {
+      btn.onclick = () => {
+        showError('');
+        document.querySelectorAll('#subTabsA button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const sub = btn.dataset.sub;
+        ['fibonacci', 'factorial', 'hanoi'].forEach(s => {
+          $('sec-' + s).classList.toggle('hidden', s !== sub);
+        });
+      };
+    });
 
-    function recUI() {
-      const b = $('r-alg').value === 'binary';
-      $('r-bin').classList.toggle('hidden', !b);
-      $('r-n-wrap').classList.toggle('hidden', b);
-    }
-
-    const HINTS = {
-      stack: 'Commands: push N, pop, peek, size (separate with ; , or new lines)',
-      queue: 'Commands: enqueue N, dequeue, front, size',
-      list: 'Commands: append N, prepend N, delete N, search N, reverse, size'
-    };
-
-    function dsHint() {
-      const s = $('d-st').value;
-      $('d-hint').textContent = HINTS[s];
-      $('d-cmd').value = {
-        stack: 'push 5; push 8; push 2; peek; pop; size',
-        queue: 'enqueue 5; enqueue 8; enqueue 2; front; dequeue; size',
-        list: 'append 5; append 8; prepend 1; search 8; delete 5; reverse'
-      }[s];
-    }
-    dsHint();
-
-    async function apiCall(payload) {
-      $('err').textContent = '';
+    // Unified API invocation (supports backend fetch or direct browser JS execution)
+    async function callApi(payload) {
+      showError('');
       try {
         if (typeof handle === 'function') {
           return handle(payload);
         }
-        const r = await fetch('/api/run', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        const d = await r.json();
-        if (!r.ok) throw new Error(d.error);
-        return d;
-      } catch (e) {
-        $('err').textContent = e.message;
+        const res = await fetch('/api/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Server error');
+        return data;
+      } catch (err) {
+        showError(err.message);
         return null;
       }
     }
 
-    async function onRunSort() {
-      const d = await apiCall({ type: 'sort', algorithm: $('s-alg').value, input: $('s-in').value });
-      if (d) render(d);
+    // ========================================================================
+    // MODULE A: RECURSION LAB LOGIC
+    // ========================================================================
+    async function onComputeFib() {
+      const n = $('fibN').value;
+      const data = await callApi({ type: 'fibonacci', n });
+      if (!data) return;
+
+      $('fibOutput').classList.remove('hidden');
+      $('fibAlert').textContent = data.explanation;
+
+      const tb = $('fibTableBody');
+      tb.innerHTML = `
+        <tr>
+          <td><b>(i) Naive Recursion</b></td>
+          <td style="font-family: ui-monospace; font-weight: 600;">${data.naive.result}</td>
+          <td>${data.naive.calls.toLocaleString()}</td>
+          <td>${data.naive.timeMs} ms</td>
+          <td><code>${data.naive.complexity}</code></td>
+          <td>${data.naive.space}</td>
+        </tr>
+        <tr>
+          <td><b>(ii) Memoized Recursion</b></td>
+          <td style="font-family: ui-monospace; font-weight: 600; color: var(--acc);">${data.memoized.result}</td>
+          <td>${data.memoized.calls.toLocaleString()} (lookups: ${data.memoized.lookups || 0})</td>
+          <td>${data.memoized.timeMs} ms</td>
+          <td><code>${data.memoized.complexity}</code></td>
+          <td>${data.memoized.space}</td>
+        </tr>
+        <tr>
+          <td><b>(iii) Bottom-Up DP</b></td>
+          <td style="font-family: ui-monospace; font-weight: 600; color: var(--green);">${data.bottomUp.result}</td>
+          <td>${data.bottomUp.iterations.toLocaleString()} iterations</td>
+          <td>${data.bottomUp.timeMs} ms</td>
+          <td><code>${data.bottomUp.complexity}</code></td>
+          <td>${data.bottomUp.space}</td>
+        </tr>
+      `;
+
+      $('fibExplanation').innerHTML = `
+        For input <i>n = ${data.n}</i>, naive tree recursion performs repeated recalculations resulting in 
+        <b>${data.naive.calls}</b> function calls. In contrast, memoization requires only <b>${data.memoized.calls}</b> calls,
+        and bottom-up DP requires only <b>${data.bottomUp.iterations}</b> loop iterations.
+      `;
     }
 
-    async function onRunRec() {
-      const d = await apiCall({ type: 'recursion', algorithm: $('r-alg').value, n: $('r-n').value, input: $('r-list').value, target: $('r-target').value });
-      if (d) {
-        render(d);
-        play();
-      }
+    async function onComputeFact() {
+      const n = $('factN').value;
+      const data = await callApi({ type: 'factorial', n });
+      if (!data) return;
+
+      $('factOutput').classList.remove('hidden');
+      $('factResult').textContent = `${data.n}! = ${data.result}`;
+
+      const tb = $('factTableBody');
+      tb.innerHTML = `
+        <tr>
+          <td><b>Recursive Factorial</b></td>
+          <td>${data.recursive.calls.toLocaleString()} calls</td>
+          <td>${data.recursive.timeMs} ms</td>
+          <td><code>${data.recursive.complexity}</code></td>
+          <td>${data.recursive.space}</td>
+        </tr>
+        <tr>
+          <td><b>Iterative Factorial</b></td>
+          <td>${data.iterative.iterations.toLocaleString()} iterations</td>
+          <td>${data.iterative.timeMs} ms</td>
+          <td><code>${data.iterative.complexity}</code></td>
+          <td>${data.iterative.space}</td>
+        </tr>
+      `;
     }
 
-    async function onRunDS() {
-      const d = await apiCall({ type: 'ds', structure: $('d-st').value, commands: $('d-cmd').value });
-      if (d) render(d);
-    }
-
-    async function onRunBench() {
-      const d = await apiCall({ type: 'benchmark' });
-      if (!d) return;
-      $('out').classList.add('hidden');
-      let h = '<b>Operations (comparisons + writes) and running time in ms, random data</b><table style="margin-top: 8px"><tr><th>n</th>';
-      d.algorithms.forEach(a => h += `<th>${a}</th>`);
-      h += '</tr>';
-      d.sizes.forEach(n => {
-        h += `<tr><td>${n}</td>`;
-        d.algorithms.forEach(a => {
-          const r = d.rows.find(x => x.size === n && x.algorithm === a);
-          h += `<td>${r.operations.toLocaleString()}<br><span style="color: var(--mut)">${r.timeMs} ms</span></td>`;
-        });
-        h += '</tr>';
-      });
-      h += '</table><p style="color: var(--mut); font-size: 13px">When n doubles, O(n²) algorithms do about 4 times the work; merge and quick sort do a little over 2 times.</p>';
-      $('benchOut').innerHTML = h;
-      $('benchOut').classList.remove('hidden');
-    }
-
-    function render(d) {
-      stop();
-      $('benchOut').classList.add('hidden');
-      $('out').classList.remove('hidden');
-      $('result').textContent = d.result;
-      $('stats').innerHTML = '';
-      for (const k in d.stats) {
-        const el = document.createElement('div');
-        el.className = 'stat';
-        el.innerHTML = '<b></b><span></span>';
-        el.firstChild.textContent = d.stats[k];
-        el.lastChild.textContent = k;
-        $('stats').appendChild(el);
-      }
-      const c = d.complexity;
-      $('cx').innerHTML = `<tr><th>Best</th><th>Average</th><th>Worst</th><th>Space</th></tr><tr><td>${c.best}</td><td>${c.average}</td><td>${c.worst}</td><td>${c.space}</td></tr><tr><td colspan="4" style="color: var(--mut)">${c.note}</td></tr>`;
-      steps = d.steps;
-      view = d.view;
-      cur = 0;
-      $('steps').innerHTML = '';
-      steps.forEach((s, i) => {
-        const el = document.createElement('div');
-        el.textContent = (i + 1) + '. ' + s.text;
-        el.onclick = () => show(i);
-        $('steps').appendChild(el);
-      });
-      $('dropped').textContent = d.dropped ? `Showing the first ${steps.length} steps; ${d.dropped} more steps ran but are not displayed. Counts and time cover the whole run.` : '';
-      $('vizCard').classList.toggle('hidden', view === 'none');
-      show(0);
-    }
-
-    function show(i) {
-      if (!steps.length) {
-        $('stepInfo').textContent = '';
-        $('stepText').textContent = 'No steps recorded';
-        $('viz').innerHTML = '';
-        return;
-      }
-      cur = Math.max(0, Math.min(steps.length - 1, i));
-      const s = steps[cur];
-      $('stepInfo').textContent = `Step ${cur + 1} / ${steps.length}`;
-      $('stepText').textContent = s.text;
-      [...$('steps').children].forEach((el, k) => el.classList.toggle('on', k === cur));
-      const sel = $('steps').children[cur];
-      if (sel) sel.scrollIntoView({ block: 'nearest' });
-      const viz = $('viz');
-      viz.innerHTML = '';
-      if (view === 'none' || !s.arr) return;
-      if (view === 'bars') {
-        let min = Infinity, max = -Infinity;
-        s.arr.forEach(v => {
-          if (v < min) min = v;
-          if (v > max) max = v;
-        });
-        s.arr.forEach((v, k) => {
-          const b = document.createElement('div');
-          b.className = 'bar' + (s.marks.indexOf(k) !== -1 ? ' m' : '');
-          b.style.height = (max === min ? 60 : 8 + ((v - min) / (max - min)) * 92) + '%';
-          b.title = v;
-          if (s.arr.length <= 30) {
-            b.style.color = '#fff';
-            b.innerHTML = `<span style="position: absolute; top: -16px; left: 0; right: 0; text-align: center; font-size: 11px; color: var(--txt)">${v}</span>`;
-          }
-          viz.appendChild(b);
-        });
-      } else if (view === 'hanoi') {
-        renderHanoi(s.arr);
-      } else {
-        if (!s.arr.length) viz.innerHTML = '<span style="color: var(--mut)">(empty)</span>';
-        s.arr.forEach(v => {
-          const b = document.createElement('div');
-          b.className = 'box';
-          b.textContent = v;
-          viz.appendChild(b);
-        });
-      }
-    }
+    // Tower of Hanoi State
+    let hanoiSteps = [];
+    let hanoiCur = 0;
+    let hanoiTimer = null;
 
     const HANOI_COLORS = [
       '#ef4444', '#f97316', '#f59e0b', '#10b981', '#06b6d4',
       '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#84cc16'
     ];
 
-    function renderHanoi(snap) {
-      const viz = $('viz');
+    async function onSetupHanoi() {
+      stopHanoiTimer();
+      const n = $('hanoiDisks').value;
+      const source = $('hanoiSource').value;
+      const dest = $('hanoiDest').value;
+      const aux = $('hanoiAux').value;
+
+      const data = await callApi({ type: 'hanoi', n, source, dest, aux });
+      if (!data) return;
+
+      $('hanoiStageCard').classList.remove('hidden');
+      hanoiSteps = data.steps;
+      hanoiCur = 0;
+
+      $('hanoiFormulaConfirm').innerHTML = `
+        Puzzle Solved: Total Moves = <b>${data.totalMoves}</b>. 
+        Formula verification: <b>2<sup>${data.disks}</sup> - 1 = ${data.expectedMoves}</b> (Confirmed!).
+      `;
+
+      // Render step list log
+      const log = $('hanoiStepLog');
+      log.innerHTML = '';
+      hanoiSteps.forEach((s, idx) => {
+        const d = document.createElement('div');
+        d.textContent = s.text;
+        d.onclick = () => renderHanoiStep(idx);
+        log.appendChild(d);
+      });
+
+      renderHanoiStep(0);
+    }
+
+    function renderHanoiStep(idx) {
+      if (!hanoiSteps.length) return;
+      hanoiCur = Math.max(0, Math.min(hanoiSteps.length - 1, idx));
+      const s = hanoiSteps[hanoiCur];
+      $('hanoiStepCounter').textContent = `Move ${hanoiCur} / ${hanoiSteps.length - 1}`;
+      $('hanoiMoveText').textContent = s.text;
+
+      [...$('hanoiStepLog').children].forEach((el, k) => el.classList.toggle('active', k === hanoiCur));
+      if ($('hanoiStepLog').children[hanoiCur]) {
+        $('hanoiStepLog').children[hanoiCur].scrollIntoView({ block: 'nearest' });
+      }
+
+      const snap = s.arr;
+      const viz = $('hanoiViz');
       viz.innerHTML = '';
-      if (!snap) return;
 
-      const total = snap.total || 3;
-      const diskH = Math.min(22, Math.max(12, Math.floor(115 / total)));
-      const stage = document.createElement('div');
-      stage.className = 'hanoi-stage';
+      const total = snap.totalDisks || 3;
+      const diskH = Math.min(22, Math.max(12, Math.floor(120 / total)));
 
-      const pegNames = ['A', 'B', 'C'];
-      pegNames.forEach(p => {
+      ['A', 'B', 'C'].forEach(p => {
         const col = document.createElement('div');
         col.className = 'hanoi-peg-col';
 
@@ -631,18 +1349,18 @@
         const disksWrap = document.createElement('div');
         disksWrap.className = 'hanoi-disks';
 
-        const disks = snap[p] || [];
+        const disks = snap.pegs[p] || [];
         disks.forEach(d => {
-          const diskEl = document.createElement('div');
-          const isMoved = snap.move && snap.move.disk === d && snap.move.to === p;
-          diskEl.className = 'hanoi-disk' + (isMoved ? ' moved' : '');
-          const pct = total === 1 ? 60 : 28 + ((d - 1) / (total - 1)) * 68;
-          diskEl.style.width = pct + '%';
-          diskEl.style.height = diskH + 'px';
-          diskEl.style.backgroundColor = HANOI_COLORS[(d - 1) % HANOI_COLORS.length];
-          if (diskH >= 13) diskEl.textContent = d;
-          disksWrap.appendChild(diskEl);
+          const el = document.createElement('div');
+          el.className = 'hanoi-disk';
+          const pct = total === 1 ? 60 : 25 + ((d - 1) / (total - 1)) * 70;
+          el.style.width = pct + '%';
+          el.style.height = diskH + 'px';
+          el.style.backgroundColor = HANOI_COLORS[(d - 1) % HANOI_COLORS.length];
+          el.textContent = d;
+          disksWrap.appendChild(el);
         });
+
         stand.appendChild(disksWrap);
 
         const base = document.createElement('div');
@@ -650,40 +1368,841 @@
         stand.appendChild(base);
 
         const nameEl = document.createElement('div');
-        const isActive = snap.move && (snap.move.from === p || snap.move.to === p);
-        nameEl.className = 'hanoi-name' + (isActive ? ' active' : '');
-        nameEl.textContent = `Peg ${p} (${disks.length})`;
+        const isMoved = snap.lastMove && (snap.lastMove.from === p || snap.lastMove.to === p);
+        nameEl.className = 'hanoi-name' + (isMoved ? ' active' : '');
+        let role = '';
+        if (p === snap.source) role = ' (Source)';
+        else if (p === snap.dest) role = ' (Dest)';
+        else if (p === snap.aux) role = ' (Aux)';
+        nameEl.textContent = `Peg ${p}${role} [${disks.length}]`;
 
         col.appendChild(stand);
         col.appendChild(nameEl);
-        stage.appendChild(col);
+        viz.appendChild(col);
       });
-
-      viz.appendChild(stage);
     }
 
-    function step(n) {
-      stop();
-      show(cur + n);
+    function stepHanoi(delta) {
+      stopHanoiTimer();
+      renderHanoiStep(hanoiCur + delta);
     }
 
-    function stop() {
-      if (timer) {
-        clearInterval(timer);
-        timer = null;
-        $('playBtn').textContent = 'Play';
+    function resetHanoi() {
+      stopHanoiTimer();
+      renderHanoiStep(0);
+    }
+
+    function stopHanoiTimer() {
+      if (hanoiTimer) {
+        clearInterval(hanoiTimer);
+        hanoiTimer = null;
+        $('hanoiPlayBtn').textContent = 'Auto-Play';
       }
     }
 
-    function play() {
-      if (timer) return stop();
-      if (cur >= steps.length - 1) cur = -1;
-      $('playBtn').textContent = 'Pause';
-      timer = setInterval(() => {
-        if (cur >= steps.length - 1) return stop();
-        show(cur + 1);
-      }, 800);
+    function toggleHanoiPlay() {
+      if (hanoiTimer) {
+        stopHanoiTimer();
+      } else {
+        if (hanoiCur >= hanoiSteps.length - 1) hanoiCur = 0;
+        $('hanoiPlayBtn').textContent = 'Pause';
+        const speed = Number($('hanoiSpeed').value);
+        hanoiTimer = setInterval(() => {
+          if (hanoiCur >= hanoiSteps.length - 1) {
+            stopHanoiTimer();
+            return;
+          }
+          renderHanoiStep(hanoiCur + 1);
+        }, speed);
+      }
     }
+
+    // ========================================================================
+    // MODULE B: DATA STRUCTURES LAB LOGIC
+    // ========================================================================
+    let currentDSKind = 'stack';
+    let activeDSInstance = null;
+
+    const DS_CONFIGS = {
+      stack: {
+        title: 'Stack (Array-Based, Fixed Capacity)',
+        desc: 'Pre-allocated plain array stack. Pushes to top, pops from top. Detects stack overflow and underflow.',
+        needsCapacity: true,
+        needsTarget: false,
+        buttons: [
+          { label: 'Push', fn: 'dsPush', primary: true },
+          { label: 'Pop', fn: 'dsPop' },
+          { label: 'Peek', fn: 'dsPeek' },
+          { label: 'Size', fn: 'dsSize' },
+          { label: 'IsEmpty', fn: 'dsIsEmpty' },
+          { label: 'IsFull', fn: 'dsIsFull' }
+        ]
+      },
+      linearQueue: {
+        title: 'Linear Queue (Fixed-Size Array)',
+        desc: 'Demonstrates the "False Full" problem: when elements are dequeued, space is wasted at the front while rear reaches the end!',
+        needsCapacity: true,
+        needsTarget: false,
+        buttons: [
+          { label: 'Enqueue', fn: 'dsEnqueue', primary: true },
+          { label: 'Dequeue', fn: 'dsDequeue' },
+          { label: 'Front', fn: 'dsFront' },
+          { label: 'Size', fn: 'dsSize' },
+          { label: 'IsEmpty', fn: 'dsIsEmpty' },
+          { label: 'IsFull', fn: 'dsIsFull' }
+        ]
+      },
+      circularQueue: {
+        title: 'Circular Queue (Fixed-Size Array)',
+        desc: 'Solves the false-full problem using modulo wrap-around `(rear + 1) % capacity`. Front and rear rotate smoothly.',
+        needsCapacity: true,
+        needsTarget: false,
+        buttons: [
+          { label: 'Enqueue', fn: 'dsEnqueue', primary: true },
+          { label: 'Dequeue', fn: 'dsDequeue' },
+          { label: 'Front', fn: 'dsFront' },
+          { label: 'Size', fn: 'dsSize' },
+          { label: 'IsEmpty', fn: 'dsIsEmpty' },
+          { label: 'IsFull', fn: 'dsIsFull' }
+        ]
+      },
+      singly: {
+        title: 'Singly Linked List',
+        desc: 'Built using custom SinglyNode objects with explicit `next` references. Supports arbitrary insertions and deletions.',
+        needsCapacity: false,
+        needsTarget: true,
+        buttons: [
+          { label: 'Insert Beginning', fn: 'dsInsertBeginning', primary: true },
+          { label: 'Insert End', fn: 'dsInsertEnd' },
+          { label: 'Insert Before Target', fn: 'dsInsertBefore' },
+          { label: 'Insert After Target', fn: 'dsInsertAfter' },
+          { label: 'Delete Beginning', fn: 'dsDeleteBeginning', danger: true },
+          { label: 'Delete End', fn: 'dsDeleteEnd', danger: true },
+          { label: 'Delete Before Target', fn: 'dsDeleteBefore', danger: true },
+          { label: 'Delete After Target', fn: 'dsDeleteAfter', danger: true },
+          { label: 'Delete Element', fn: 'dsDeleteElement', danger: true },
+          { label: 'Search', fn: 'dsSearch' },
+          { label: 'Size', fn: 'dsSize' }
+        ]
+      },
+      doubly: {
+        title: 'Doubly Linked List',
+        desc: 'Built with DoublyNode objects featuring bidirectional `next` and `prev` pointers. Allows backward display traversal.',
+        needsCapacity: false,
+        needsTarget: true,
+        buttons: [
+          { label: 'Insert Beginning', fn: 'dsInsertBeginning', primary: true },
+          { label: 'Insert End', fn: 'dsInsertEnd' },
+          { label: 'Insert Before Target', fn: 'dsInsertBefore' },
+          { label: 'Insert After Target', fn: 'dsInsertAfter' },
+          { label: 'Delete Beginning', fn: 'dsDeleteBeginning', danger: true },
+          { label: 'Delete End', fn: 'dsDeleteEnd', danger: true },
+          { label: 'Delete Before Target', fn: 'dsDeleteBefore', danger: true },
+          { label: 'Delete After Target', fn: 'dsDeleteAfter', danger: true },
+          { label: 'Delete Element', fn: 'dsDeleteElement', danger: true },
+          { label: 'Search', fn: 'dsSearch' },
+          { label: 'Display Backward', fn: 'dsDisplayBackward' },
+          { label: 'Size', fn: 'dsSize' }
+        ]
+      }
+    };
+
+    document.querySelectorAll('#subTabsB button').forEach(btn => {
+      btn.onclick = () => {
+        showError('');
+        document.querySelectorAll('#subTabsB button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const dsKey = btn.dataset.ds;
+        if (dsKey === 'brackets') {
+          $('dsMainCard').classList.add('hidden');
+          $('sec-brackets').classList.remove('hidden');
+        } else {
+          $('sec-brackets').classList.add('hidden');
+          $('dsMainCard').classList.remove('hidden');
+          currentDSKind = dsKey;
+          initDSUI();
+        }
+      };
+    });
+
+    function initDSUI() {
+      const cfg = DS_CONFIGS[currentDSKind];
+      $('dsTitle').textContent = cfg.title;
+      $('dsDesc').textContent = cfg.desc;
+      $('dsCapacityRow').classList.toggle('hidden', !cfg.needsCapacity);
+      $('dsTargetWrap').classList.toggle('hidden', !cfg.needsTarget);
+
+      // Populate interactive buttons
+      const btnContainer = $('dsButtons');
+      btnContainer.innerHTML = '';
+      cfg.buttons.forEach(b => {
+        const btn = document.createElement('button');
+        btn.className = b.primary ? 'btn-primary' : b.danger ? 'btn-danger' : 'btn-sec';
+        btn.textContent = b.label;
+        btn.onclick = () => window[b.fn]();
+        btnContainer.appendChild(btn);
+      });
+
+      reinitCurrentDS();
+    }
+
+    function reinitCurrentDS() {
+      const cap = Number($('dsCap').value) || 5;
+      if (currentDSKind === 'stack') {
+        activeDSInstance = new ArrayStack(cap);
+      } else if (currentDSKind === 'linearQueue') {
+        activeDSInstance = new ArrayLinearQueue(cap);
+      } else if (currentDSKind === 'circularQueue') {
+        activeDSInstance = new ArrayCircularQueue(cap);
+      } else if (currentDSKind === 'singly') {
+        activeDSInstance = new SinglyLinkedList();
+      } else if (currentDSKind === 'doubly') {
+        activeDSInstance = new DoublyLinkedList();
+      }
+      setDSStatus(`Initialized empty ${DS_CONFIGS[currentDSKind].title}.`, 'info');
+      renderDS();
+    }
+
+    function setDSStatus(msg, type = 'info') {
+      const el = $('dsStatusAlert');
+      el.className = `alert alert-${type}`;
+      el.textContent = msg;
+    }
+
+    function getDSVal() {
+      const v = $('dsVal').value.trim();
+      if (v === '') throw new Error('Please enter a numeric value in the Element Value field.');
+      return Number(v);
+    }
+
+    function getDSTarget() {
+      const t = $('dsTarget').value.trim();
+      if (t === '') throw new Error('Please enter a target value in the Target field.');
+      return Number(t);
+    }
+
+    // Stack Handlers
+    function dsPush() {
+      try {
+        const v = getDSVal();
+        activeDSInstance.push(v);
+        setDSStatus(`Pushed ${v} onto stack.`, 'success');
+        renderDS();
+      } catch (e) {
+        setDSStatus(e.message, 'error');
+      }
+    }
+
+    function dsPop() {
+      try {
+        const v = activeDSInstance.pop();
+        setDSStatus(`Popped ${v} from stack.`, 'success');
+        renderDS();
+      } catch (e) {
+        setDSStatus(e.message, 'error');
+      }
+    }
+
+    function dsPeek() {
+      const v = activeDSInstance.peek();
+      if (v === undefined) setDSStatus('Stack is empty. Nothing to peek.', 'warning');
+      else setDSStatus(`Top element is ${v}.`, 'info');
+    }
+
+    function dsIsEmpty() {
+      const empty = activeDSInstance.is_empty();
+      setDSStatus(`is_empty() -> ${empty ? 'TRUE (empty)' : 'FALSE (has elements)'}.`, 'info');
+    }
+
+    function dsIsFull() {
+      const full = activeDSInstance.is_full();
+      setDSStatus(`is_full() -> ${full ? 'TRUE (full)' : 'FALSE (has available space)'}.`, 'info');
+    }
+
+    // Queue Handlers
+    function dsEnqueue() {
+      try {
+        const v = getDSVal();
+        activeDSInstance.enqueue(v);
+        setDSStatus(`Enqueued ${v}.`, 'success');
+        renderDS();
+      } catch (e) {
+        setDSStatus(e.message, 'error');
+      }
+    }
+
+    function dsDequeue() {
+      try {
+        const v = activeDSInstance.dequeue();
+        setDSStatus(`Dequeued ${v}.`, 'success');
+        renderDS();
+      } catch (e) {
+        setDSStatus(e.message, 'error');
+      }
+    }
+
+    function dsFront() {
+      const v = activeDSInstance.front_val ? activeDSInstance.front_val() : activeDSInstance.front();
+      if (v === undefined) setDSStatus('Queue is empty. Front is undefined.', 'warning');
+      else setDSStatus(`Front element is ${v}.`, 'info');
+    }
+
+    // Linked List Handlers
+    function dsInsertBeginning() {
+      try {
+        const v = getDSVal();
+        activeDSInstance.insertAtBeginning(v);
+        setDSStatus(`Inserted ${v} at beginning.`, 'success');
+        renderDS();
+      } catch (e) { setDSStatus(e.message, 'error'); }
+    }
+
+    function dsInsertEnd() {
+      try {
+        const v = getDSVal();
+        activeDSInstance.insertAtEnd(v);
+        setDSStatus(`Inserted ${v} at end.`, 'success');
+        renderDS();
+      } catch (e) { setDSStatus(e.message, 'error'); }
+    }
+
+    function dsInsertBefore() {
+      try {
+        const v = getDSVal();
+        const t = getDSTarget();
+        activeDSInstance.insertBefore(t, v);
+        setDSStatus(`Inserted ${v} before ${t}.`, 'success');
+        renderDS();
+      } catch (e) { setDSStatus(e.message, 'error'); }
+    }
+
+    function dsInsertAfter() {
+      try {
+        const v = getDSVal();
+        const t = getDSTarget();
+        activeDSInstance.insertAfter(t, v);
+        setDSStatus(`Inserted ${v} after ${t}.`, 'success');
+        renderDS();
+      } catch (e) { setDSStatus(e.message, 'error'); }
+    }
+
+    function dsDeleteBeginning() {
+      try {
+        const v = activeDSInstance.deleteAtBeginning();
+        setDSStatus(`Deleted ${v} from beginning.`, 'success');
+        renderDS();
+      } catch (e) { setDSStatus(e.message, 'error'); }
+    }
+
+    function dsDeleteEnd() {
+      try {
+        const v = activeDSInstance.deleteAtEnd();
+        setDSStatus(`Deleted ${v} from end.`, 'success');
+        renderDS();
+      } catch (e) { setDSStatus(e.message, 'error'); }
+    }
+
+    function dsDeleteBefore() {
+      try {
+        const t = getDSTarget();
+        const v = activeDSInstance.deleteBefore(t);
+        setDSStatus(`Deleted ${v} (which was before ${t}).`, 'success');
+        renderDS();
+      } catch (e) { setDSStatus(e.message, 'error'); }
+    }
+
+    function dsDeleteAfter() {
+      try {
+        const t = getDSTarget();
+        const v = activeDSInstance.deleteAfter(t);
+        setDSStatus(`Deleted ${v} (which was after ${t}).`, 'success');
+        renderDS();
+      } catch (e) { setDSStatus(e.message, 'error'); }
+    }
+
+    function dsDeleteElement() {
+      try {
+        const v = getDSVal();
+        activeDSInstance.deleteElement(v);
+        setDSStatus(`Deleted element ${v} from list.`, 'success');
+        renderDS();
+      } catch (e) { setDSStatus(e.message, 'error'); }
+    }
+
+    function dsSearch() {
+      try {
+        const v = getDSVal();
+        const r = activeDSInstance.search(v);
+        if (r.found) {
+          setDSStatus(`Found element ${v} at 0-based index ${r.index} (${r.comparisons} comparison(s)).`, 'success');
+        } else {
+          setDSStatus(`Element ${v} not found in list (${r.comparisons} comparisons made).`, 'warning');
+        }
+      } catch (e) { setDSStatus(e.message, 'error'); }
+    }
+
+    function dsDisplayBackward() {
+      if (activeDSInstance.toArrayBackward) {
+        const back = activeDSInstance.toArrayBackward();
+        setDSStatus(`Backward Display (tail to head): [${back.join(' <── ')}]`, 'info');
+      }
+    }
+
+    function dsSize() {
+      const s = typeof activeDSInstance.size === 'function' ? activeDSInstance.size() : activeDSInstance.size;
+      setDSStatus(`Current size is ${s}.`, 'info');
+    }
+
+    // Render Stage
+    function renderDS() {
+      const stage = $('dsRenderArea');
+      stage.innerHTML = '';
+
+      if (currentDSKind === 'stack') {
+        const col = document.createElement('div');
+        col.className = 'stack-col';
+        const slots = activeDSInstance.getRawSlots();
+        for (let i = 0; i < slots.length; i++) {
+          const val = slots[i];
+          const div = document.createElement('div');
+          div.className = 'stack-slot' + (i === activeDSInstance.top ? ' top' : '');
+          div.innerHTML = `<span>[${i}]</span> <span>${val !== null ? val : '<span style="color:#475569">-</span>'}</span> ${i === activeDSInstance.top ? '<span style="font-size:10px; color:var(--acc);">(TOP)</span>' : ''}`;
+          col.appendChild(div);
+        }
+        stage.appendChild(col);
+      } else if (currentDSKind === 'linearQueue' || currentDSKind === 'circularQueue') {
+        const qRow = document.createElement('div');
+        qRow.className = 'queue-row';
+        const slots = activeDSInstance.getRawSlots();
+        for (let i = 0; i < slots.length; i++) {
+          const val = slots[i];
+          const div = document.createElement('div');
+          const isFront = i === activeDSInstance.front && !activeDSInstance.is_empty();
+          const isRear = i === activeDSInstance.rear && !activeDSInstance.is_empty();
+          div.className = 'queue-slot' + (val !== null ? ' active' : '');
+
+          let ptrText = '';
+          if (isFront && isRear) ptrText = 'F & R';
+          else if (isFront) ptrText = 'FRONT';
+          else if (isRear) ptrText = 'REAR';
+
+          div.innerHTML = `
+            ${ptrText ? `<span class="queue-ptr">${ptrText}</span>` : ''}
+            <span style="font-weight:700;">${val !== null ? val : '·'}</span>
+            <span class="queue-idx">[${i}]</span>
+          `;
+          qRow.appendChild(div);
+        }
+        stage.appendChild(qRow);
+      } else {
+        // Linked Lists
+        const arr = activeDSInstance.toArray();
+        if (!arr.length) {
+          stage.innerHTML = '<span style="color:var(--mut);">List is empty (head = NULL).</span>';
+        } else {
+          arr.forEach((v, idx) => {
+            const b = document.createElement('div');
+            b.className = 'node-box';
+            b.innerHTML = `<span>${v}</span> <span style="font-size:11px;color:var(--mut)">[${idx}]</span>`;
+            stage.appendChild(b);
+
+            if (idx < arr.length - 1) {
+              const arrow = document.createElement('span');
+              arrow.className = 'node-arrow';
+              arrow.textContent = currentDSKind === 'doubly' ? ' <-> ' : ' -> ';
+              stage.appendChild(arrow);
+            } else {
+              const nil = document.createElement('span');
+              nil.style.color = 'var(--mut)';
+              nil.style.fontSize = '12px';
+              nil.textContent = ' -> NULL';
+              stage.appendChild(nil);
+            }
+          });
+        }
+      }
+
+      // Update metrics
+      const sz = typeof activeDSInstance.size === 'function' ? activeDSInstance.size() : activeDSInstance.size;
+      $('dsStatsGrid').innerHTML = `
+        <div class="stat-box"><div class="lbl">Size</div><div class="val">${sz}</div></div>
+        <div class="stat-box"><div class="lbl">Is Empty</div><div class="val">${activeDSInstance.is_empty()}</div></div>
+        ${activeDSInstance.capacity ? `<div class="stat-box"><div class="lbl">Capacity</div><div class="val">${activeDSInstance.capacity}</div></div>` : ''}
+        ${activeDSInstance.is_false_full ? `<div class="stat-box"><div class="lbl">False Full?</div><div class="val" style="color:${activeDSInstance.is_false_full() ? 'var(--red)' : 'var(--green)'}">${activeDSInstance.is_false_full()}</div></div>` : ''}
+      `;
+    }
+
+    // Balanced Brackets Logic
+    let bracketSteps = [];
+    let bracketCur = 0;
+
+    function setBracketPreset(expr) {
+      $('bracketInput').value = expr;
+      onCheckBrackets();
+    }
+
+    async function onCheckBrackets() {
+      const expr = $('bracketInput').value;
+      const data = await callApi({ type: 'brackets', expression: expr });
+      if (!data) return;
+
+      $('bracketOutput').classList.remove('hidden');
+      const resBadge = $('bracketResultBadge');
+      resBadge.className = 'alert ' + (data.balanced ? 'alert-success' : 'alert-error');
+      resBadge.textContent = (data.balanced ? 'BALANCED: ' : 'UNBALANCED: ') + data.message;
+
+      bracketSteps = data.steps;
+      bracketCur = 0;
+      renderBracketStep(0);
+    }
+
+    function renderBracketStep(idx) {
+      if (!bracketSteps.length) return;
+      bracketCur = Math.max(0, Math.min(bracketSteps.length - 1, idx));
+      const s = bracketSteps[bracketCur];
+      $('bracketStepInfo').textContent = `Step ${bracketCur + 1} / ${bracketSteps.length}`;
+      $('bracketStepDetail').textContent = `Char '${s.char}' [index ${s.index}]: ${s.action}`;
+
+      const stackViz = $('bracketVizStack');
+      stackViz.innerHTML = '';
+      if (!s.stack.length) {
+        stackViz.innerHTML = '<span style="color:var(--mut);">Stack is currently EMPTY.</span>';
+      } else {
+        const col = document.createElement('div');
+        col.className = 'stack-col';
+        s.stack.forEach((ch, k) => {
+          const div = document.createElement('div');
+          div.className = 'stack-slot' + (k === s.stack.length - 1 ? ' top' : '');
+          div.innerHTML = `<span>[${k}]</span> <b>'${ch}'</b> ${k === s.stack.length - 1 ? '<span style="font-size:10px;color:var(--acc);">(TOP)</span>' : ''}`;
+          col.appendChild(div);
+        });
+        stackViz.appendChild(col);
+      }
+    }
+
+    function stepBracket(delta) {
+      renderBracketStep(bracketCur + delta);
+    }
+
+    // ========================================================================
+    // MODULE C: SORTING LAB LOGIC
+    // ========================================================================
+    let sortSteps = [];
+    let sortCur = 0;
+    let sortTimer = null;
+
+    function generateRandomSortData(n) {
+      const nums = [];
+      for (let i = 0; i < n; i++) nums.push(Math.floor(Math.random() * 95) + 5);
+      $('sortInput').value = nums.join(' ');
+    }
+
+    async function onRunSort() {
+      stopSortTimer();
+      $('compareAllOut').classList.add('hidden');
+      const alg = $('sortAlg').value;
+      const input = $('sortInput').value;
+
+      const data = await callApi({ type: 'sort', algorithm: alg, input });
+      if (!data) return;
+
+      $('singleSortOut').classList.remove('hidden');
+      sortSteps = data.steps;
+      sortCur = 0;
+
+      // Stats
+      const sg = $('sortStatsGrid');
+      sg.innerHTML = '';
+      for (const k in data.stats) {
+        const sb = document.createElement('div');
+        sb.className = 'stat-box';
+        sb.innerHTML = `<div class="lbl">${k}</div><div class="val">${data.stats[k]}</div>`;
+        sg.appendChild(sb);
+      }
+
+      // Complexity table
+      const info = data.info;
+      $('sortComplexityTable').innerHTML = `
+        <thead><tr><th>Algorithm</th><th>Best</th><th>Average</th><th>Worst</th><th>Space</th><th>Stable</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><b>${info.name}</b></td>
+            <td><code>${info.best}</code></td>
+            <td><code>${info.average}</code></td>
+            <td><code>${info.worst}</code></td>
+            <td>${info.space}</td>
+            <td>${info.stable}</td>
+          </tr>
+          <tr><td colspan="6" style="color:var(--mut);">${info.note}</td></tr>
+        </tbody>
+      `;
+
+      // Log steps
+      const log = $('sortStepLog');
+      log.innerHTML = '';
+      sortSteps.forEach((s, idx) => {
+        const div = document.createElement('div');
+        div.textContent = `${idx + 1}. ${s.text}`;
+        div.onclick = () => renderSortStep(idx);
+        log.appendChild(div);
+      });
+
+      renderSortStep(0);
+    }
+
+    function renderSortStep(idx) {
+      if (!sortSteps.length) return;
+      sortCur = Math.max(0, Math.min(sortSteps.length - 1, idx));
+      const s = sortSteps[sortCur];
+      $('sortStepInfo').textContent = `Step ${sortCur + 1} / ${sortSteps.length}`;
+      $('sortStepText').textContent = s.text;
+
+      [...$('sortStepLog').children].forEach((el, k) => el.classList.toggle('active', k === sortCur));
+      if ($('sortStepLog').children[sortCur]) {
+        $('sortStepLog').children[sortCur].scrollIntoView({ block: 'nearest' });
+      }
+
+      const viz = $('viz');
+      viz.innerHTML = '';
+      if (!s.arr || !s.arr.length) return;
+
+      const min = Math.min(...s.arr);
+      const max = Math.max(...s.arr);
+      const marks = s.marks || [];
+      const meta = s.meta || {};
+
+      s.arr.forEach((v, k) => {
+        const b = document.createElement('div');
+        b.className = 'bar';
+
+        if (meta.type === 'compare' && marks.includes(k)) b.classList.add('compare');
+        else if (meta.type === 'swap' && marks.includes(k)) b.classList.add('swap');
+        else if (meta.type === 'yellow_zone' && meta.yellowRange && k >= meta.yellowRange[0] && k <= meta.yellowRange[1]) b.classList.add('yellow-zone');
+        else if (meta.type === 'green_zone' && meta.greenRange && k >= meta.greenRange[0] && k <= meta.greenRange[1]) b.classList.add('green-zone');
+        else if (meta.pivotIndex === k) b.classList.add('pivot');
+
+        const heightPct = max === min ? 60 : 10 + ((v - min) / (max - min)) * 85;
+        b.style.height = heightPct + '%';
+
+        if (s.arr.length <= 30) {
+          b.innerHTML = `<span class="bar-lbl">${v}</span>`;
+        }
+        viz.appendChild(b);
+      });
+    }
+
+    function stepSort(delta) {
+      stopSortTimer();
+      renderSortStep(sortCur + delta);
+    }
+
+    function resetSort() {
+      stopSortTimer();
+      renderSortStep(0);
+    }
+
+    function stopSortTimer() {
+      if (sortTimer) {
+        clearInterval(sortTimer);
+        sortTimer = null;
+        $('sortPlayBtn').textContent = 'Play Auto';
+      }
+    }
+
+    function toggleSortPlay() {
+      if (sortTimer) {
+        stopSortTimer();
+      } else {
+        if (sortCur >= sortSteps.length - 1) sortCur = 0;
+        $('sortPlayBtn').textContent = 'Pause';
+        const spd = Number($('sortSpeed').value);
+        sortTimer = setInterval(() => {
+          if (sortCur >= sortSteps.length - 1) {
+            stopSortTimer();
+            return;
+          }
+          renderSortStep(sortCur + 1);
+        }, spd);
+      }
+    }
+
+    async function onCompareAllSorts() {
+      stopSortTimer();
+      $('singleSortOut').classList.add('hidden');
+      const input = $('sortInput').value;
+
+      const data = await callApi({ type: 'compareSorts', input });
+      if (!data) return;
+
+      $('compareAllOut').classList.remove('hidden');
+      const tb = $('compareTableBody');
+      tb.innerHTML = '';
+
+      data.results.forEach(r => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><b>${r.name}</b></td>
+          <td>${r.comparisons.toLocaleString()}</td>
+          <td>${r.swapsMoves.toLocaleString()}</td>
+          <td>${r.writes.toLocaleString()}</td>
+          <td style="font-weight:700; color:var(--acc);">${r.timeMs} ms</td>
+          <td><code>${r.best}</code></td>
+          <td><code>${r.average}</code></td>
+          <td><code>${r.worst}</code></td>
+          <td>${r.space}</td>
+          <td>${r.stable}</td>
+        `;
+        tb.appendChild(row);
+      });
+    }
+
+    // ========================================================================
+    // MODULE D: TIME COMPLEXITY ANALYSIS LOGIC
+    // ========================================================================
+    let benchData = null;
+    let currentBenchType = 'random';
+
+    async function onRunBenchmark() {
+      $('btnBenchRun').disabled = true;
+      $('benchStatusText').textContent = 'Running benchmark suite with 3x repetitions... Please wait...';
+
+      const data = await callApi({
+        type: 'benchmark',
+        options: {
+          sizes: [100, 500, 1000, 2000, 5000, 10000],
+          types: ['random', 'sorted', 'reverse'],
+          repetitions: 3
+        }
+      });
+
+      $('btnBenchRun').disabled = false;
+      $('benchStatusText').textContent = 'Benchmark completed!';
+
+      if (!data) return;
+      benchData = data;
+
+      $('benchResultsCard').classList.remove('hidden');
+      $('discInsertion').textContent = data.analysis.insertionOnSorted;
+      $('discQuickFirst').textContent = data.analysis.quickFirstDegradation;
+      $('discQuickRandom').textContent = data.analysis.randomPivotResolution;
+
+      renderBenchmarkTable('random');
+      renderBenchmarkCharts(data);
+    }
+
+    document.querySelectorAll('#benchTabs button').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('#benchTabs button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentBenchType = btn.dataset.btype;
+        renderBenchmarkTable(currentBenchType);
+      };
+    });
+
+    function renderBenchmarkTable(type) {
+      if (!benchData) return;
+      const th = $('benchTableHead');
+      const tb = $('benchTableBody');
+
+      if (type === 'large') {
+        th.innerHTML = `<tr><th>n</th><th>Algorithm</th><th>Average Time</th><th>Comparisons</th><th>Writes</th></tr>`;
+        tb.innerHTML = '';
+        benchData.largeRows.forEach(r => {
+          tb.innerHTML += `<tr><td><b>${r.n.toLocaleString()}</b></td><td>${r.name}</td><td style="color:var(--acc);font-weight:700;">${r.timeMs} ms</td><td>${r.comparisons.toLocaleString()}</td><td>${r.writes.toLocaleString()}</td></tr>`;
+        });
+        return;
+      }
+
+      th.innerHTML = `<tr><th>Size (n)</th><th>Bubble Sort</th><th>Selection Sort</th><th>Insertion Sort</th><th>Merge Sort</th><th>Quick (First Pivot)</th><th>Quick (Random Pivot)</th></tr>`;
+      tb.innerHTML = '';
+
+      benchData.sizes.forEach(n => {
+        let rowHtml = `<tr><td><b>${n.toLocaleString()}</b></td>`;
+        ['bubble', 'selection', 'insertion', 'merge', 'quickFirst', 'quickRandom'].forEach(k => {
+          const entry = benchData.rows.find(x => x.n === n && x.type === type && x.key === k);
+          if (entry) {
+            const timeStr = typeof entry.avgTimeMs === 'number' ? entry.avgTimeMs + ' ms' : entry.avgTimeMs;
+            rowHtml += `<td>${timeStr}<br><span style="color:var(--mut);font-size:11px;">(${entry.avgComparisons.toLocaleString()} comps)</span></td>`;
+          } else {
+            rowHtml += `<td>—</td>`;
+          }
+        });
+        rowHtml += `</tr>`;
+        tb.innerHTML += rowHtml;
+      });
+    }
+
+    function renderBenchmarkCharts(data) {
+      // 1. Chart N^2
+      renderSVGChart('chartN2', data.sizes, [
+        { label: 'Bubble', color: '#ef4444', values: getValuesFor(data, 'bubble', 'random') },
+        { label: 'Selection', color: '#f59e0b', values: getValuesFor(data, 'selection', 'random') },
+        { label: 'Insertion', color: '#38bdf8', values: getValuesFor(data, 'insertion', 'random') }
+      ]);
+
+      // 2. Chart N log N
+      renderSVGChart('chartNlogN', data.sizes, [
+        { label: 'Merge Sort', color: '#10b981', values: getValuesFor(data, 'merge', 'random') },
+        { label: 'Quicksort (Random)', color: '#a855f7', values: getValuesFor(data, 'quickRandom', 'random') }
+      ]);
+    }
+
+    function getValuesFor(data, key, type) {
+      return data.sizes.map(n => {
+        const e = data.rows.find(x => x.n === n && x.key === key && x.type === type);
+        return e && typeof e.avgTimeMs === 'number' ? e.avgTimeMs : 0;
+      });
+    }
+
+    function renderSVGChart(svgId, xLabels, seriesList) {
+      const svg = $(svgId);
+      svg.innerHTML = '';
+      const w = 500, h = 260, pad = 40;
+
+      let maxVal = 0.1;
+      seriesList.forEach(s => s.values.forEach(v => { if (v > maxVal) maxVal = v; }));
+
+      // Axes lines
+      svg.innerHTML += `<line x1="${pad}" y1="${h - pad}" x2="${w - pad}" y2="${h - pad}" stroke="#475569" stroke-width="2"/>`;
+      svg.innerHTML += `<line x1="${pad}" y1="${pad}" x2="${pad}" y2="${h - pad}" stroke="#475569" stroke-width="2"/>`;
+
+      // X Grid & Labels
+      const xStep = (w - 2 * pad) / (xLabels.length - 1);
+      xLabels.forEach((lbl, i) => {
+        const x = pad + i * xStep;
+        svg.innerHTML += `<line class="grid" x1="${x}" y1="${pad}" x2="${x}" y2="${h - pad}"/>`;
+        svg.innerHTML += `<text x="${x}" y="${h - pad + 18}" text-anchor="middle">${lbl}</text>`;
+      });
+
+      // Y Grid & Labels
+      for (let j = 0; j <= 4; j++) {
+        const yVal = (maxVal / 4) * j;
+        const y = (h - pad) - ((h - 2 * pad) * (j / 4));
+        svg.innerHTML += `<line class="grid" x1="${pad}" y1="${y}" x2="${w - pad}" y2="${y}"/>`;
+        svg.innerHTML += `<text x="${pad - 6}" y="${y + 4}" text-anchor="end">${yVal.toFixed(1)}ms</text>`;
+      }
+
+      // Plot Series Polylines
+      seriesList.forEach((s, sIdx) => {
+        let pts = '';
+        s.values.forEach((v, i) => {
+          const x = pad + i * xStep;
+          const y = (h - pad) - ((v / maxVal) * (h - 2 * pad));
+          pts += `${x},${y} `;
+          svg.innerHTML += `<circle cx="${x}" cy="${y}" r="3" fill="${s.color}"/>`;
+        });
+        svg.innerHTML += `<polyline points="${pts.trim()}" fill="none" stroke="${s.color}" stroke-width="2.5"/>`;
+
+        // Legend at top
+        const lx = pad + sIdx * 110;
+        svg.innerHTML += `<circle cx="${lx}" cy="15" r="5" fill="${s.color}"/><text x="${lx + 10}" y="19" fill="${s.color}">${s.label}</text>`;
+      });
+    }
+
+    // Default initialization on load
+    window.onload = () => {
+      initDSUI();
+    };
   </script>
 </body>
 
