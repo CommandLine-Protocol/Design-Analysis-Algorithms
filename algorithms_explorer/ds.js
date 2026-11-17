@@ -100,4 +100,12 @@ class Queue {
   toArray() { return this.list.toArray(); }
 }
 
-module.exports = { MyArray, LinkedList, Stack, Queue };
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { MyArray, LinkedList, Stack, Queue };
+}
+if (typeof window !== 'undefined') {
+  window.MyArray = MyArray;
+  window.LinkedList = LinkedList;
+  window.Stack = Stack;
+  window.Queue = Queue;
+}

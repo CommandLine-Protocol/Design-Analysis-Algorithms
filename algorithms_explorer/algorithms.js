@@ -1,4 +1,6 @@
-const { MyArray, LinkedList, Stack, Queue } = require('./ds');
+if (typeof require !== 'undefined') {
+  Object.assign(global, require('./ds'));
+}
 
 // ---------- helpers ----------
 class Recorder {
@@ -38,9 +40,14 @@ function parseNumbers(str) {
 }
 
 function timeIt(fn) {
-  const t0 = process.hrtime.bigint();
+  if (typeof process !== 'undefined' && process.hrtime && process.hrtime.bigint) {
+    const t0 = process.hrtime.bigint();
+    const r = fn();
+    return { r, ms: Number(process.hrtime.bigint() - t0) / 1e6 };
+  }
+  const t0 = performance.now();
   const r = fn();
-  return { r, ms: Number(process.hrtime.bigint() - t0) / 1e6 };
+  return { r, ms: performance.now() - t0 };
 }
 
 function swap(a, i, j, c) {
@@ -373,4 +380,9 @@ function handle(q) {
   throw new Error('Unknown request type');
 }
 
-module.exports = { handle };
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { handle };
+}
+if (typeof window !== 'undefined') {
+  window.handle = handle;
+}
