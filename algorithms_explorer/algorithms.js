@@ -191,245 +191,263 @@ function runSort(name, input) {
   };
 }
 
-// ---------- recursion ----------
-function ind(d) { let s = ''; for (let i = 0; i < d; i++) s += '  '; return s; }
+// ============================================================================
+// MODULE A: RECURSION LAB
+// ============================================================================
 
-function fact(n, d, c) {
-  c.calls++; c.ops++; if (d > c.maxDepth) c.maxDepth = d;
-  if (c.rec.on) c.rec.add(() => ind(d) + `factorial(${n}) called`);
-  if (n <= 1) { if (c.rec.on) c.rec.add(() => ind(d) + `factorial(${n}) returns 1 (base case)`); return 1n; }
-  const r = BigInt(n) * fact(n - 1, d + 1, c); c.ops++;
-  if (c.rec.on) c.rec.add(() => ind(d) + `factorial(${n}) returns ${r}`);
-  return r;
+// (a) Fibonacci (Naive, Memoized, Bottom-Up DP)
+function fibNaive(n, c) {
+  c.calls++;
+  if (n <= 0) return 0n;
+  if (n === 1) return 1n;
+  return fibNaive(n - 1, c) + fibNaive(n - 2, c);
 }
 
-function fib(n, d, c) {
-  c.calls++; c.ops++; if (d > c.maxDepth) c.maxDepth = d;
-  if (c.rec.on) c.rec.add(() => ind(d) + `fib(${n})`);
-  if (n < 2) return n;
-  const x = fib(n - 1, d + 1, c), y = fib(n - 2, d + 1, c); c.ops++;
-  if (c.rec.on) c.rec.add(() => ind(d) + `fib(${n}) = ${x + y}`);
-  return x + y;
+function fibMemo(n, c, memo) {
+  c.calls++;
+  if (memo[n] !== -1n) {
+    c.lookups = (c.lookups || 0) + 1;
+    return memo[n];
+  }
+  let res;
+  if (n <= 0) res = 0n;
+  else if (n === 1) res = 1n;
+  else res = fibMemo(n - 1, c, memo) + fibMemo(n - 2, c, memo);
+  memo[n] = res;
+  return res;
 }
 
-function fibMemo(n, d, c, memo) {
-  c.calls++; c.ops++; if (d > c.maxDepth) c.maxDepth = d;
-  if (memo.get(n) !== -1) { if (c.rec.on) c.rec.add(() => ind(d) + `fib(${n}) found in memo: ${memo.get(n)}`); return memo.get(n); }
-  if (c.rec.on) c.rec.add(() => ind(d) + `fib(${n})`);
-  let r;
-  if (n < 2) r = n; else { r = fibMemo(n - 1, d + 1, c, memo) + fibMemo(n - 2, d + 1, c, memo); c.ops++; }
-  memo.set(n, r);
-  return r;
+function fibBottomUp(n, c) {
+  if (n <= 0) return 0n;
+  if (n === 1) return 1n;
+  const dp = new Array(n + 1);
+  dp[0] = 0n;
+  dp[1] = 1n;
+  for (let i = 2; i <= n; i++) {
+    c.iterations++;
+    dp[i] = dp[i - 1] + dp[i - 2];
+  }
+  return dp[n];
 }
 
-function hanoi(n, from, to, via, d, c) {
-  c.calls++; if (d > c.maxDepth) c.maxDepth = d;
+function runFibonacci(n) {
+  const num = Math.floor(Number(n));
+  if (num !== num || num < 0) throw new Error('Input n must be a non-negative integer.');
+  if (num > 1000) throw new Error('Maximum supported n for Fibonacci is 1000.');
+
+  const runNaive = num <= 30;
+  let naiveResult = 'Skipped (n > 30 to prevent browser freeze)';
+  let naiveCalls = 'N/A';
+  let naiveTime = 'N/A';
+  if (runNaive) {
+    const cNaive = { calls: 0 };
+    const tNaive = timeIt(() => fibNaive(num, cNaive));
+    naiveResult = tNaive.r.toString();
+    naiveCalls = cNaive.calls;
+    naiveTime = Number(tNaive.ms.toFixed(4));
+  }
+
+  const cMemo = { calls: 0, lookups: 0 };
+  const memoArr = new Array(num + 1);
+  for (let i = 0; i <= num; i++) memoArr[i] = -1n;
+  const tMemo = timeIt(() => fibMemo(num, cMemo, memoArr));
+
+  const cDP = { iterations: 0 };
+  const tDP = timeIt(() => fibBottomUp(num, cDP));
+
+  return {
+    n: num,
+    naive: {
+      ran: runNaive,
+      result: naiveResult,
+      calls: naiveCalls,
+      timeMs: naiveTime,
+      complexity: 'O(2^n)',
+      space: 'O(n) call stack',
+      note: 'Tree recursion computes identical sub-problems repeatedly, creating ~2^n function calls.'
+    },
+    memoized: {
+      result: tMemo.r.toString(),
+      calls: cMemo.calls,
+      lookups: cMemo.lookups,
+      timeMs: Number(tMemo.ms.toFixed(4)),
+      complexity: 'O(n)',
+      space: 'O(n) memo table + stack',
+      note: 'Top-down recursion storing solutions to sub-problems in a lookup array upon first visit.'
+    },
+    bottomUp: {
+      result: tDP.r.toString(),
+      iterations: cDP.iterations,
+      timeMs: Number(tDP.ms.toFixed(4)),
+      complexity: 'O(n)',
+      space: 'O(n) DP table (or O(1) space with 2 variables)',
+      note: 'Iterative calculation starting from base cases fib(0) and fib(1) up to fib(n) without recursion overhead.'
+    },
+    explanation:
+      num > 30
+        ? `Naive recursion is disabled for n = ${num} because its time complexity is O(2^n). For n = 35, it requires over 29 million calls; for n = 45, over 2.2 trillion calls. Memoization and Dynamic Programming eliminate redundant work, solving it in O(n) time.`
+        : `Notice how naive recursion made ${naiveCalls} calls for n = ${num}, while memoization required only ${cMemo.calls} calls and bottom-up DP required only ${cDP.iterations} iterations!`
+  };
+}
+
+// (b) Factorial (Recursive and Iterative)
+function factRecursive(n, c) {
+  c.calls++;
+  if (n <= 1) return 1n;
+  return BigInt(n) * factRecursive(n - 1, c);
+}
+
+function factIterative(n, c) {
+  let res = 1n;
+  for (let i = 2; i <= n; i++) {
+    c.iterations++;
+    res *= BigInt(i);
+  }
+  return res;
+}
+
+function runFactorial(n) {
+  const num = Math.floor(Number(n));
+  if (num !== num) throw new Error('Please enter a valid numeric value for n.');
+  if (num < 0) throw new Error('Factorial is not defined for negative integers (n must be >= 0).');
+  if (num > 500) throw new Error('Maximum supported n for Factorial display is 500.');
+
+  const cRec = { calls: 0 };
+  const tRec = timeIt(() => factRecursive(num, cRec));
+
+  const cIter = { iterations: 0 };
+  const tIter = timeIt(() => factIterative(num, cIter));
+
+  return {
+    n: num,
+    result: tRec.r.toString(),
+    recursive: {
+      calls: cRec.calls,
+      timeMs: Number(tRec.ms.toFixed(4)),
+      complexity: 'O(n)',
+      space: 'O(n) stack frames'
+    },
+    iterative: {
+      iterations: cIter.iterations,
+      timeMs: Number(tIter.ms.toFixed(4)),
+      complexity: 'O(n)',
+      space: 'O(1) extra space'
+    },
+    specialCases: num === 0 ? '0! = 1 by convention (empty product).' : null
+  };
+}
+
+// (c) Tower of Hanoi (Animated with customizable source, dest, aux)
+function hanoiSolve(n, source, dest, aux, rec, c, pegs) {
+  c.calls++;
   if (n === 0) return;
-  hanoi(n - 1, from, via, to, d + 1, c);
-  c.ops++; c.moves++;
-  if (c.pegs) {
-    c.pegs[from].pop();
-    c.pegs[to].push(n);
-  }
-  if (c.rec.on) {
-    const snap = {
-      A: c.pegs.A.toArray(),
-      B: c.pegs.B.toArray(),
-      C: c.pegs.C.toArray(),
-      total: c.totalDisks,
-      move: { disk: n, from, to }
-    };
-    c.rec.add(() => `Move ${c.moves}: disk ${n} from ${from} to ${to}`, snap, [from, to]);
-  }
-  hanoi(n - 1, via, to, from, d + 1, c);
-}
+  hanoiSolve(n - 1, source, aux, dest, rec, c, pegs);
 
-function binSearch(a, lo, hi, t, d, c) {
-  c.calls++; c.ops++; if (d > c.maxDepth) c.maxDepth = d;
-  if (lo > hi) { if (c.rec.on) c.rec.add(() => ind(d) + `range [${lo}..${hi}] is empty: not found`); return -1; }
-  const mid = Math.floor((lo + hi) / 2); c.ops++;
-  if (c.rec.on) c.rec.add(() => ind(d) + `search [${lo}..${hi}], middle index ${mid} holds ${a.get(mid)}`);
-  if (a.get(mid) === t) return mid;
-  if (a.get(mid) < t) return binSearch(a, mid + 1, hi, t, d + 1, c);
-  return binSearch(a, lo, mid - 1, t, d + 1, c);
-}
+  c.moves++;
+  const disk = pegs[source].pop();
+  pegs[dest].push(disk);
 
-const REC_INFO = {
-  factorial: { best: 'O(n)', average: 'O(n)', worst: 'O(n)', space: 'O(n)', note: 'n calls, call stack depth n.' },
-  fibonacci: { best: 'O(2^n)', average: 'O(2^n)', worst: 'O(2^n)', space: 'O(n)', note: 'Repeated sub-problems: roughly 1.6^n calls.' },
-  fibmemo: { best: 'O(n)', average: 'O(n)', worst: 'O(n)', space: 'O(n)', note: 'Each value computed once, then reused from the memo table.' },
-  hanoi: { best: 'O(2^n)', average: 'O(2^n)', worst: 'O(2^n)', space: 'O(n)', note: 'Exactly 2^n - 1 moves are required.' },
-  binary: { best: 'O(1)', average: 'O(log n)', worst: 'O(log n)', space: 'O(log n)', note: 'Search range halves each call. Input is sorted first (merge sort).' }
-};
-
-function runRecursion(q) {
-  const alg = q.algorithm;
-  if (!REC_INFO[alg]) throw new Error('Unknown recursive algorithm');
-  const n = Math.floor(Number(q.n));
-  let arr = null, target = Number(q.target);
-
-  if (alg === 'binary') {
-    arr = parseNumbers(q.input || '');
-    if (arr.length === 0) throw new Error('Enter a list of numbers');
-    if (target !== target) throw new Error('Enter a numeric target');
-    mergeSort(arr, 0, arr.length - 1, { comparisons: 0, writes: 0, rec: new Recorder(false) });
-  } else {
-    if (n !== n || n < 0) throw new Error('n must be a non-negative integer');
-    if (alg === 'factorial' && n > 100) throw new Error('n must be 0..100');
-    if (alg === 'fibonacci' && n > 32) throw new Error('n must be 0..32 (naive version is exponential)');
-    if (alg === 'fibmemo' && n > 70) throw new Error('n must be 0..70');
-    if (alg === 'hanoi' && (n < 1 || n > 20)) throw new Error('n must be 1..20');
-  }
-
-  function exec(rec) {
-    const c = { calls: 0, ops: 0, maxDepth: 0, moves: 0, rec };
-    let result;
-    if (alg === 'factorial') result = `${n}! = ${fact(n, 0, c)}`;
-    else if (alg === 'fibonacci') result = `fib(${n}) = ${fib(n, 0, c)}`;
-    else if (alg === 'fibmemo') {
-      const memo = new MyArray(); for (let i = 0; i <= n; i++) memo.push(-1);
-      result = `fib(${n}) = ${fibMemo(n, 0, c, memo)}`;
-    } else if (alg === 'hanoi') {
-      const pegs = { A: new MyArray(), B: new MyArray(), C: new MyArray() };
-      for (let i = n; i >= 1; i--) pegs.A.push(i);
-      c.pegs = pegs;
-      c.totalDisks = n;
-      if (rec.on) {
-        rec.add(
-          `Initial state: all ${n} disks on Peg A`,
-          {
-            A: pegs.A.toArray(),
-            B: pegs.B.toArray(),
-            C: pegs.C.toArray(),
-            total: n,
-            move: null
-          },
-          ['A']
-        );
-      }
-      hanoi(n, 'A', 'C', 'B', 0, c);
-      result = `${c.moves} moves (2^${n} - 1 = ${Math.pow(2, n) - 1})`;
-    } else {
-      const idx = binSearch(arr, 0, arr.length - 1, target, 0, c);
-      result = idx === -1 ? `${target} not found in sorted list [${arr.toArray().join(', ')}]`
-        : `${target} found at index ${idx} of sorted list [${arr.toArray().join(', ')}]`;
-    }
-    return { c, result };
-  }
-
-  const timed = timeIt(() => exec(new Recorder(false)));
-  const rec = new Recorder(true, 300);
-  const shown = exec(rec);
-  return {
-    view: alg === 'hanoi' ? 'hanoi' : 'none', result: shown.result,
-    steps: rec.steps.toArray(), dropped: rec.dropped,
-    stats: {
-      'Recursive calls': shown.c.calls, 'Max recursion depth': shown.c.maxDepth,
-      'Total operations': shown.c.ops, 'Running time (ms)': Number(timed.ms.toFixed(4))
+  rec.add(
+    `Move ${c.moves}: Move disk ${disk} from Peg ${source} to Peg ${dest}`,
+    {
+      pegs: {
+        A: pegs.A.slice(),
+        B: pegs.B.slice(),
+        C: pegs.C.slice()
+      },
+      source,
+      dest,
+      aux,
+      totalDisks: c.totalDisks,
+      lastMove: { disk, from: source, to: dest }
     },
-    complexity: REC_INFO[alg]
+    [source, dest]
+  );
+
+  hanoiSolve(n - 1, aux, dest, source, rec, c, pegs);
+}
+
+function runTowerOfHanoi(n, source = 'A', dest = 'C', aux = 'B') {
+  const num = Math.floor(Number(n));
+  if (num !== num || num < 1 || num > 8) {
+    throw new Error('Number of disks must be an integer between 1 and 8.');
+  }
+  const validPegs = ['A', 'B', 'C'];
+  if (!validPegs.includes(source) || !validPegs.includes(dest) || !validPegs.includes(aux)) {
+    throw new Error('Pegs must be chosen from A, B, and C.');
+  }
+  if (source === dest || source === aux || dest === aux) {
+    throw new Error('Source, Destination, and Auxiliary pegs must all be distinct.');
+  }
+
+  const pegs = { A: [], B: [], C: [] };
+  for (let d = num; d >= 1; d--) {
+    pegs[source].push(d);
+  }
+
+  const rec = new Recorder(true, 1000);
+  const c = { calls: 0, moves: 0, totalDisks: num };
+
+  rec.add(
+    `Initial State: All ${num} disk(s) stacked on Peg ${source}`,
+    {
+      pegs: { A: pegs.A.slice(), B: pegs.B.slice(), C: pegs.C.slice() },
+      source,
+      dest,
+      aux,
+      totalDisks: num,
+      lastMove: null
+    },
+    [source]
+  );
+
+  const timed = timeIt(() => hanoiSolve(num, source, dest, aux, rec, c, pegs));
+  const expectedMoves = Math.pow(2, num) - 1;
+
+  return {
+    disks: num,
+    source,
+    dest,
+    aux,
+    totalMoves: c.moves,
+    expectedMoves,
+    formulaConfirmed: c.moves === expectedMoves,
+    recursiveCalls: c.calls,
+    timeMs: Number(timed.ms.toFixed(4)),
+    steps: rec.steps,
+    complexity: {
+      time: 'O(2^n)',
+      space: 'O(n) stack depth',
+      note: `Exact number of moves required is 2^${num} - 1 = ${expectedMoves}.`
+    }
   };
 }
 
-// ---------- data structures ----------
-const DS_INFO = {
-  stack: { best: 'O(1)', average: 'O(1)', worst: 'O(1)', space: 'O(n)', note: 'push, pop, peek are all O(1). Backed by MyArray.' },
-  queue: { best: 'O(1)', average: 'O(1)', worst: 'O(1)', space: 'O(n)', note: 'enqueue and dequeue are O(1). Backed by a linked list with head and tail pointers.' },
-  list: { best: 'O(1)', average: 'O(n)', worst: 'O(n)', space: 'O(n)', note: 'prepend/append O(1); search, delete, reverse O(n).' }
-};
-
-function execDS(structure, cmds, rec, c) {
-  const ds = structure === 'stack' ? new Stack() : structure === 'queue' ? new Queue() : new LinkedList();
-  for (let k = 0; k < cmds.length; k++) {
-    const cmd = cmds.get(k);
-    const w = splitBy(cmd, ch => ch === ' ' || ch === '\t');
-    const name = w.get(0).toLowerCase();
-    const hasArg = w.length > 1;
-    const v = hasArg ? Number(w.get(1)) : undefined;
-    const needNum = () => { if (!hasArg || v !== v) throw new Error('needs a numeric argument'); };
-    let msg = '';
-    try {
-      if (structure === 'stack') {
-        if (name === 'push') { needNum(); ds.push(v); c.writes++; msg = `pushed ${v}`; }
-        else if (name === 'pop') { const r = ds.pop(); c.writes++; msg = r === undefined ? 'stack is empty' : `popped ${r}`; }
-        else if (name === 'peek') { const r = ds.peek(); msg = r === undefined ? 'stack is empty' : `top is ${r}`; }
-        else if (name === 'size') msg = `size is ${ds.size}`;
-        else throw new Error('unknown command (push, pop, peek, size)');
-      } else if (structure === 'queue') {
-        if (name === 'enqueue') { needNum(); ds.enqueue(v); c.writes++; msg = `enqueued ${v}`; }
-        else if (name === 'dequeue') { const r = ds.dequeue(); c.writes++; msg = r === undefined ? 'queue is empty' : `dequeued ${r}`; }
-        else if (name === 'front') { const r = ds.front(); msg = r === undefined ? 'queue is empty' : `front is ${r}`; }
-        else if (name === 'size') msg = `size is ${ds.size}`;
-        else throw new Error('unknown command (enqueue, dequeue, front, size)');
-      } else {
-        if (name === 'append') { needNum(); ds.append(v); c.writes++; msg = `appended ${v}`; }
-        else if (name === 'prepend') { needNum(); ds.prepend(v); c.writes++; msg = `prepended ${v}`; }
-        else if (name === 'delete') { needNum(); const ok = ds.remove(v, c); if (ok) c.writes++; msg = ok ? `deleted ${v}` : `${v} not found`; }
-        else if (name === 'search') { needNum(); const i = ds.find(v, c); msg = i === -1 ? `${v} not found` : `${v} found at index ${i}`; }
-        else if (name === 'reverse') { ds.reverse(c); msg = 'list reversed'; }
-        else if (name === 'size') msg = `size is ${ds.size}`;
-        else throw new Error('unknown command (append, prepend, delete, search, reverse, size)');
-      }
-    } catch (e) { msg = 'Error: ' + e.message; }
-    if (rec.on) rec.add(`${cmd} -> ${msg}`, ds);
-  }
-  return ds;
-}
-
-function runDS(structure, text) {
-  if (!DS_INFO[structure]) throw new Error('Unknown data structure');
-  const cmds = splitBy(text || '', ch => ch === ';' || ch === '\n' || ch === ',');
-  if (cmds.length === 0) throw new Error('Enter at least one command');
-  if (cmds.length > 500) throw new Error('Maximum 500 commands');
-
-  const c1 = { comparisons: 0, writes: 0 };
-  const timed = timeIt(() => execDS(structure, cmds, new Recorder(false), c1));
-  const rec = new Recorder(true, 500);
-  const c2 = { comparisons: 0, writes: 0 };
-  const final = execDS(structure, cmds, rec, c2);
-  const label = structure === 'stack' ? ' (bottom to top)' : structure === 'queue' ? ' (front to back)' : ' (head to tail)';
-  return {
-    view: 'boxes',
-    result: 'Final state' + label + ': [' + final.toArray().join(', ') + ']',
-    steps: rec.steps.toArray(), dropped: rec.dropped,
-    stats: {
-      Commands: cmds.length, Comparisons: c2.comparisons, 'Node/array writes': c2.writes,
-      'Total operations': c2.comparisons + c2.writes, 'Running time (ms)': Number(timed.ms.toFixed(4))
-    },
-    complexity: DS_INFO[structure]
-  };
-}
-
-// ---------- benchmark ----------
-function runBenchmark() {
-  const sizes = [100, 500, 1000, 2000, 4000];
-  const names = ['bubble', 'selection', 'insertion', 'merge', 'quick'];
-  const rows = new MyArray();
-  let seed = 12345;
-  for (let s = 0; s < sizes.length; s++) {
-    const base = new MyArray();
-    for (let i = 0; i < sizes[s]; i++) { seed = (seed * 48271) % 2147483647; base.push(seed % 10000); }
-    for (let k = 0; k < names.length; k++) {
-      const c = { comparisons: 0, writes: 0, rec: new Recorder(false) };
-      const a = base.copy();
-      const t = timeIt(() => SORTS[names[k]](a, c));
-      rows.push({ size: sizes[s], algorithm: names[k], operations: c.comparisons + c.writes, timeMs: Number(t.ms.toFixed(3)) });
-    }
-  }
-  return { rows: rows.toArray(), algorithms: names, sizes };
-}
-
+// Dispatcher
 function handle(q) {
+  if (q.type === 'fibonacci') return runFibonacci(q.n);
+  if (q.type === 'factorial') return runFactorial(q.n);
+  if (q.type === 'hanoi') return runTowerOfHanoi(q.n, q.source, q.dest, q.aux);
   if (q.type === 'sort') return runSort(q.algorithm, q.input);
-  if (q.type === 'recursion') return runRecursion(q);
-  if (q.type === 'ds') return runDS(q.structure, q.commands);
-  if (q.type === 'benchmark') return runBenchmark();
   throw new Error('Unknown request type');
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { handle };
+  module.exports = {
+    runFibonacci,
+    runFactorial,
+    runTowerOfHanoi,
+    bubbleSort,
+    selectionSort,
+    insertionSort,
+    mergeSort,
+    quickSort,
+    handle
+  };
 }
 if (typeof window !== 'undefined') {
+  window.runFibonacci = runFibonacci;
+  window.runFactorial = runFactorial;
+  window.runTowerOfHanoi = runTowerOfHanoi;
   window.handle = handle;
 }
