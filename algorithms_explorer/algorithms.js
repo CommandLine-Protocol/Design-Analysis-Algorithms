@@ -2,12 +2,34 @@ if (typeof require !== 'undefined') {
   Object.assign(global, require('./ds'));
 }
 
-// ---------- helpers ----------
+// ---------- High-Resolution Timing & Helpers ----------
+function timeIt(fn) {
+  if (typeof process !== 'undefined' && process.hrtime && process.hrtime.bigint) {
+    const t0 = process.hrtime.bigint();
+    const r = fn();
+    const t1 = process.hrtime.bigint();
+    return { r, ms: Number(t1 - t0) / 1e6 };
+  }
+  const t0 = performance.now();
+  const r = fn();
+  const t1 = performance.now();
+  return { r, ms: t1 - t0 };
+}
+
 class Recorder {
-  constructor(on, max) { this.on = on; this.max = max || 300; this.steps = new MyArray(); this.dropped = 0; }
-  add(text, arr, marks) {
+  constructor(on, max = 300) {
+    this.on = on;
+    this.max = max;
+    this.steps = [];
+    this.dropped = 0;
+  }
+
+  add(text, arr, marks = [], meta = {}) {
     if (!this.on) return;
-    if (this.steps.length >= this.max) { this.dropped++; return; }
+    if (this.steps.length >= this.max) {
+      this.dropped++;
+      return;
+    }
     let a = null;
     if (arr) {
       if (typeof arr.toArray === 'function') a = arr.toArray();
@@ -18,177 +40,35 @@ class Recorder {
     this.steps.push({
       text: typeof text === 'function' ? text() : text,
       arr: a,
-      marks: marks || []
+      marks: marks || [],
+      meta: meta || {}
     });
   }
 }
 
-function splitBy(str, isSep) {           // tokenizer, drops empty tokens
-  const out = new MyArray(); let cur = '';
-  for (let i = 0; i <= str.length; i++) {
-    if (i === str.length || isSep(str[i])) { if (cur !== '') { out.push(cur); cur = ''; } }
-    else cur += str[i];
-  }
-  return out;
-}
-
 function parseNumbers(str) {
-  const out = new MyArray(); let cur = '';
+  const out = [];
+  let cur = '';
   for (let i = 0; i <= str.length; i++) {
     const ch = i < str.length ? str[i] : ' ';
-    if ((ch >= '0' && ch <= '9') || ch === '-' || ch === '.') cur += ch;
-    else if (cur !== '') {
+    if ((ch >= '0' && ch <= '9') || ch === '-' || ch === '.') {
+      cur += ch;
+    } else if (cur !== '') {
       const v = Number(cur);
-      if (v !== v) throw new Error('Invalid number: ' + cur);
-      out.push(v); cur = '';
+      if (v !== v) throw new Error('Invalid numeric input: "' + cur + '"');
+      out.push(v);
+      cur = '';
     }
   }
   return out;
-}
-
-function timeIt(fn) {
-  if (typeof process !== 'undefined' && process.hrtime && process.hrtime.bigint) {
-    const t0 = process.hrtime.bigint();
-    const r = fn();
-    return { r, ms: Number(process.hrtime.bigint() - t0) / 1e6 };
-  }
-  const t0 = performance.now();
-  const r = fn();
-  return { r, ms: performance.now() - t0 };
 }
 
 function swap(a, i, j, c) {
-  const t = a.get(i); a.set(i, a.get(j)); a.set(j, t); c.writes += 2;
-}
-
-// ---------- sorting ----------
-function bubbleSort(a, c) {
-  const n = a.length, R = c.rec.on;
-  for (let i = 0; i < n - 1; i++) {
-    let swapped = false;
-    for (let j = 0; j < n - 1 - i; j++) {
-      c.comparisons++;
-      if (a.get(j) > a.get(j + 1)) {
-        swap(a, j, j + 1, c); swapped = true;
-        if (R) c.rec.add(`Pass ${i + 1}: swapped positions ${j} and ${j + 1}`, a, [j, j + 1]);
-      }
-    }
-    if (R) c.rec.add(`End of pass ${i + 1}: position ${n - 1 - i} is final`, a, [n - 1 - i]);
-    if (!swapped) { if (R) c.rec.add('No swaps in this pass, stopping early', a); break; }
-  }
-}
-
-function selectionSort(a, c) {
-  const n = a.length, R = c.rec.on;
-  for (let i = 0; i < n - 1; i++) {
-    let min = i;
-    for (let j = i + 1; j < n; j++) { c.comparisons++; if (a.get(j) < a.get(min)) min = j; }
-    if (min !== i) swap(a, i, min, c);
-    if (R) c.rec.add(`Smallest of the unsorted part is ${a.get(i)}, placed at position ${i}`, a, [i, min]);
-  }
-}
-
-function insertionSort(a, c) {
-  const n = a.length, R = c.rec.on;
-  for (let i = 1; i < n; i++) {
-    const key = a.get(i); let j = i - 1;
-    while (j >= 0) {
-      c.comparisons++;
-      if (a.get(j) > key) { a.set(j + 1, a.get(j)); c.writes++; j--; } else break;
-    }
-    a.set(j + 1, key); c.writes++;
-    if (R) c.rec.add(`Inserted ${key} at position ${j + 1}`, a, [j + 1]);
-  }
-}
-
-function mergeSort(a, lo, hi, c) {
-  if (lo >= hi) return;
-  const mid = Math.floor((lo + hi) / 2);
-  mergeSort(a, lo, mid, c);
-  mergeSort(a, mid + 1, hi, c);
-  const tmp = new MyArray();
-  let i = lo, j = mid + 1;
-  while (i <= mid && j <= hi) {
-    c.comparisons++;
-    if (a.get(i) <= a.get(j)) { tmp.push(a.get(i)); i++; } else { tmp.push(a.get(j)); j++; }
-  }
-  while (i <= mid) { tmp.push(a.get(i)); i++; }
-  while (j <= hi) { tmp.push(a.get(j)); j++; }
-  for (let k = 0; k < tmp.length; k++) a.set(lo + k, tmp.get(k));
-  c.writes += 2 * tmp.length;
-  if (c.rec.on) {
-    const marks = []; for (let k = lo; k <= hi; k++) marks[k - lo] = k;
-    c.rec.add(`Merged [${lo}..${mid}] and [${mid + 1}..${hi}]`, a, marks);
-  }
-}
-
-function quickSort(a, lo, hi, c) {
-  while (lo < hi) {
-    const m = Math.floor((lo + hi) / 2);
-    if (m !== hi) swap(a, m, hi, c);        // middle element as pivot
-    const pivot = a.get(hi);
-    let i = lo;
-    for (let j = lo; j < hi; j++) {
-      c.comparisons++;
-      if (a.get(j) < pivot) { if (i !== j) swap(a, i, j, c); i++; }
-    }
-    if (i !== hi) swap(a, i, hi, c);
-    if (c.rec.on) c.rec.add(`Pivot ${pivot} placed at position ${i} (range ${lo}..${hi})`, a, [i]);
-    
-    // Recurse on the smaller partition and loop on the larger partition to guarantee max stack depth O(log n)
-    if (i - lo < hi - i) {
-      quickSort(a, lo, i - 1, c);
-      lo = i + 1;
-    } else {
-      quickSort(a, i + 1, hi, c);
-      hi = i - 1;
-    }
-  }
-}
-
-const SORTS = {
-  bubble: (a, c) => bubbleSort(a, c),
-  selection: (a, c) => selectionSort(a, c),
-  insertion: (a, c) => insertionSort(a, c),
-  merge: (a, c) => mergeSort(a, 0, a.length - 1, c),
-  quick: (a, c) => quickSort(a, 0, a.length - 1, c)
-};
-
-const SORT_INFO = {
-  bubble: { best: 'O(n)', average: 'O(n²)', worst: 'O(n²)', space: 'O(1)', note: 'Stable. Early exit makes the sorted case O(n).' },
-  selection: { best: 'O(n²)', average: 'O(n²)', worst: 'O(n²)', space: 'O(1)', note: 'Unstable. Always O(n²) comparisons but only O(n) swaps.' },
-  insertion: { best: 'O(n)', average: 'O(n²)', worst: 'O(n²)', space: 'O(1)', note: 'Stable. Very fast on nearly sorted input.' },
-  merge: { best: 'O(n log n)', average: 'O(n log n)', worst: 'O(n log n)', space: 'O(n)', note: 'Stable. Recursion depth is log n; needs a temporary buffer.' },
-  quick: { best: 'O(n log n)', average: 'O(n log n)', worst: 'O(n²)', space: 'O(log n)', note: 'Unstable. Middle pivot avoids the sorted-input worst case but O(n²) is still possible.' }
-};
-
-function runSort(name, input) {
-  const fn = SORTS[name];
-  if (!fn) throw new Error('Unknown sorting algorithm');
-  const arr = parseNumbers(input || '');
-  if (arr.length === 0) throw new Error('Enter at least one number');
-  if (arr.length > 5000) throw new Error('Maximum 5000 numbers');
-
-  const c1 = { comparisons: 0, writes: 0, rec: new Recorder(false) };
-  const timed = timeIt(() => fn(arr.copy(), c1));        // clean timing pass, no recording
-
-  const rec = new Recorder(true, 300);
-  const work = arr.copy();
-  const c2 = { comparisons: 0, writes: 0, rec };
-  rec.add('Initial array', work);
-  fn(work, c2);
-  rec.add('Sorted result', work);
-
-  return {
-    view: 'bars',
-    result: 'Sorted: ' + work.toArray().join(', '),
-    steps: rec.steps.toArray(), dropped: rec.dropped,
-    stats: {
-      'Input size': arr.length, Comparisons: c2.comparisons, 'Array writes': c2.writes,
-      'Total operations': c2.comparisons + c2.writes, 'Running time (ms)': Number(timed.ms.toFixed(4))
-    },
-    complexity: SORT_INFO[name]
-  };
+  const t = a[i];
+  a[i] = a[j];
+  a[j] = t;
+  c.writes += 2;
+  c.swaps = (c.swaps || 0) + 1;
 }
 
 // ============================================================================
@@ -235,7 +115,10 @@ function runFibonacci(n) {
   if (num !== num || num < 0) throw new Error('Input n must be a non-negative integer.');
   if (num > 1000) throw new Error('Maximum supported n for Fibonacci is 1000.');
 
+  // Safe threshold check for naive
   const runNaive = num <= 30;
+
+  // 1. Naive Recursion
   let naiveResult = 'Skipped (n > 30 to prevent browser freeze)';
   let naiveCalls = 'N/A';
   let naiveTime = 'N/A';
@@ -247,11 +130,13 @@ function runFibonacci(n) {
     naiveTime = Number(tNaive.ms.toFixed(4));
   }
 
+  // 2. Memoized Recursion
   const cMemo = { calls: 0, lookups: 0 };
   const memoArr = new Array(num + 1);
   for (let i = 0; i <= num; i++) memoArr[i] = -1n;
   const tMemo = timeIt(() => fibMemo(num, cMemo, memoArr));
 
+  // 3. Bottom-Up Dynamic Programming
   const cDP = { iterations: 0 };
   const tDP = timeIt(() => fibBottomUp(num, cDP));
 
@@ -344,6 +229,7 @@ function hanoiSolve(n, source, dest, aux, rec, c, pegs) {
   hanoiSolve(n - 1, source, aux, dest, rec, c, pegs);
 
   c.moves++;
+  // Pop from source peg, push to dest peg
   const disk = pegs[source].pop();
   pegs[dest].push(disk);
 
@@ -381,6 +267,7 @@ function runTowerOfHanoi(n, source = 'A', dest = 'C', aux = 'B') {
   }
 
   const pegs = { A: [], B: [], C: [] };
+  // Initial state: all disks on source peg, largest at bottom
   for (let d = num; d >= 1; d--) {
     pegs[source].push(d);
   }
@@ -388,6 +275,7 @@ function runTowerOfHanoi(n, source = 'A', dest = 'C', aux = 'B') {
   const rec = new Recorder(true, 1000);
   const c = { calls: 0, moves: 0, totalDisks: num };
 
+  // Add initial state
   rec.add(
     `Initial State: All ${num} disk(s) stacked on Peg ${source}`,
     {
@@ -423,15 +311,551 @@ function runTowerOfHanoi(n, source = 'A', dest = 'C', aux = 'B') {
   };
 }
 
-// Dispatcher
+// ============================================================================
+// MODULE C: SORTING LAB
+// ============================================================================
+
+function bubbleSort(a, c) {
+  const n = a.length;
+  for (let i = 0; i < n - 1; i++) {
+    let swapped = false;
+    for (let j = 0; j < n - 1 - i; j++) {
+      c.comparisons++;
+      if (c.rec && c.rec.on) {
+        c.rec.add(`Pass ${i + 1}: Compare index ${j} (${a[j]}) and ${j + 1} (${a[j + 1]})`, a, [j, j + 1], {
+          type: 'compare',
+          pass: i + 1
+        });
+      }
+      if (a[j] > a[j + 1]) {
+        swap(a, j, j + 1, c);
+        swapped = true;
+        if (c.rec && c.rec.on) {
+          c.rec.add(`Pass ${i + 1}: Swap index ${j} and ${j + 1} -> [${a.join(', ')}]`, a, [j, j + 1], {
+            type: 'swap',
+            pass: i + 1
+          });
+        }
+      }
+    }
+    if (c.rec && c.rec.on) {
+      c.rec.add(`End of Pass ${i + 1}: Element at index ${n - 1 - i} (${a[n - 1 - i]}) is in final sorted position`, a, [
+        n - 1 - i
+      ], { type: 'pass_end', pass: i + 1 });
+    }
+    if (!swapped) {
+      if (c.rec && c.rec.on) {
+        c.rec.add('Early termination: Array is already sorted (0 swaps in pass)', a, [], { type: 'early_exit' });
+      }
+      break;
+    }
+  }
+}
+
+function selectionSort(a, c) {
+  const n = a.length;
+  for (let i = 0; i < n - 1; i++) {
+    let minIdx = i;
+    for (let j = i + 1; j < n; j++) {
+      c.comparisons++;
+      if (c.rec && c.rec.on) {
+        c.rec.add(`Pass ${i + 1}: Check if index ${j} (${a[j]}) < current min at ${minIdx} (${a[minIdx]})`, a, [j, minIdx], {
+          type: 'compare',
+          pass: i + 1
+        });
+      }
+      if (a[j] < a[minIdx]) {
+        minIdx = j;
+      }
+    }
+    if (minIdx !== i) {
+      swap(a, i, minIdx, c);
+      if (c.rec && c.rec.on) {
+        c.rec.add(`Pass ${i + 1}: Swap smallest unsorted item ${a[i]} into position ${i}`, a, [i, minIdx], {
+          type: 'swap',
+          pass: i + 1
+        });
+      }
+    } else {
+      if (c.rec && c.rec.on) {
+        c.rec.add(`Pass ${i + 1}: Element at position ${i} (${a[i]}) is already minimum`, a, [i], {
+          type: 'noop',
+          pass: i + 1
+        });
+      }
+    }
+  }
+}
+
+function insertionSort(a, c) {
+  const n = a.length;
+  for (let i = 1; i < n; i++) {
+    const key = a[i];
+    let j = i - 1;
+    if (c.rec && c.rec.on) {
+      c.rec.add(`Pass ${i}: Current key is ${key} at index ${i}`, a, [i], { type: 'key_select', pass: i });
+    }
+    while (j >= 0) {
+      c.comparisons++;
+      if (a[j] > key) {
+        a[j + 1] = a[j];
+        c.writes++;
+        c.moves = (c.moves || 0) + 1;
+        if (c.rec && c.rec.on) {
+          c.rec.add(`Pass ${i}: Shift ${a[j]} right from index ${j} to ${j + 1}`, a, [j, j + 1], {
+            type: 'shift',
+            pass: i
+          });
+        }
+        j--;
+      } else {
+        break;
+      }
+    }
+    a[j + 1] = key;
+    c.writes++;
+    c.moves = (c.moves || 0) + 1;
+    if (c.rec && c.rec.on) {
+      c.rec.add(`Pass ${i}: Inserted key ${key} at index ${j + 1}`, a, [j + 1], { type: 'insert', pass: i });
+    }
+  }
+}
+
+function mergeSortInternal(a, lo, hi, c) {
+  if (lo >= hi) return;
+  const mid = Math.floor((lo + hi) / 2);
+  mergeSortInternal(a, lo, mid, c);
+  mergeSortInternal(a, mid + 1, hi, c);
+
+  // First-principles merge without slice/built-ins
+  const len = hi - lo + 1;
+  const temp = new Array(len);
+  let i = lo;
+  let j = mid + 1;
+  let k = 0;
+
+  while (i <= mid && j <= hi) {
+    c.comparisons++;
+    if (a[i] <= a[j]) {
+      temp[k++] = a[i++];
+    } else {
+      temp[k++] = a[j++];
+    }
+  }
+  while (i <= mid) temp[k++] = a[i++];
+  while (j <= hi) temp[k++] = a[j++];
+
+  for (let idx = 0; idx < len; idx++) {
+    a[lo + idx] = temp[idx];
+    c.writes++;
+    c.moves = (c.moves || 0) + 1;
+  }
+
+  if (c.rec && c.rec.on) {
+    const marks = [];
+    for (let m = lo; m <= hi; m++) marks.push(m);
+    c.rec.add(`Merged sub-arrays [${lo}..${mid}] and [${mid + 1}..${hi}] into [${lo}..${hi}]`, a, marks, {
+      type: 'merge_step',
+      range: [lo, hi]
+    });
+  }
+}
+
+// First-element pivot with "yellow/green" partition taught in class
+// Yellow segment: elements <= pivot; Green segment: elements > pivot
+function partitionYellowGreen(a, lo, hi, c) {
+  const pivot = a[lo];
+  let yellow = lo; // boundary of yellow zone (items <= pivot)
+
+  if (c.rec && c.rec.on) {
+    c.rec.add(
+      `Partition range [${lo}..${hi}]: Pivot is first element a[${lo}] = ${pivot}`,
+      a,
+      [lo],
+      { type: 'pivot_selected', pivotIndex: lo, pivotValue: pivot }
+    );
+  }
+
+  for (let cur = lo + 1; cur <= hi; cur++) {
+    c.comparisons++;
+    if (a[cur] <= pivot) {
+      yellow++;
+      if (yellow !== cur) {
+        swap(a, yellow, cur, c);
+      }
+      if (c.rec && c.rec.on) {
+        c.rec.add(
+          `a[${cur}] (${a[cur]}) <= pivot (${pivot}) -> expand yellow zone to index ${yellow}`,
+          a,
+          [yellow, cur],
+          { type: 'yellow_zone', yellowRange: [lo + 1, yellow], greenRange: [yellow + 1, cur], pivotIndex: lo }
+        );
+      }
+    } else {
+      if (c.rec && c.rec.on) {
+        c.rec.add(
+          `a[${cur}] (${a[cur]}) > pivot (${pivot}) -> belongs in green zone`,
+          a,
+          [cur],
+          { type: 'green_zone', yellowRange: [lo + 1, yellow], greenRange: [yellow + 1, cur], pivotIndex: lo }
+        );
+      }
+    }
+  }
+
+  // Place pivot into final position between yellow and green
+  if (lo !== yellow) {
+    swap(a, lo, yellow, c);
+  }
+
+  if (c.rec && c.rec.on) {
+    c.rec.add(
+      `Pivot ${pivot} placed at final partitioned position ${yellow}. Left (yellow) <= ${pivot}, Right (green) > ${pivot}`,
+      a,
+      [yellow],
+      { type: 'partition_done', finalPivotIndex: yellow }
+    );
+  }
+
+  return yellow;
+}
+
+function quickSortFirstPivot(a, lo, hi, c) {
+  if (lo < hi) {
+    const p = partitionYellowGreen(a, lo, hi, c);
+    quickSortFirstPivot(a, lo, p - 1, c);
+    quickSortFirstPivot(a, p + 1, hi, c);
+  }
+}
+
+function quickSortRandomPivot(a, lo, hi, c) {
+  if (lo < hi) {
+    // Choose random pivot index and swap to first position (lo)
+    const randomIdx = lo + Math.floor(Math.random() * (hi - lo + 1));
+    if (randomIdx !== lo) {
+      swap(a, lo, randomIdx, c);
+      if (c.rec && c.rec.on) {
+        c.rec.add(
+          `Random pivot selection: Swapped random index ${randomIdx} (${a[lo]}) to first position ${lo}`,
+          a,
+          [lo, randomIdx],
+          { type: 'random_pivot_swap' }
+        );
+      }
+    }
+    const p = partitionYellowGreen(a, lo, hi, c);
+    quickSortRandomPivot(a, lo, p - 1, c);
+    quickSortRandomPivot(a, p + 1, hi, c);
+  }
+}
+
+const SORT_INFO = {
+  bubble: {
+    name: 'Bubble Sort',
+    best: 'O(n)',
+    average: 'O(n²)',
+    worst: 'O(n²)',
+    space: 'O(1)',
+    stable: 'Yes',
+    note: 'Stable. Early exit optimization detects already-sorted data in 1 pass.'
+  },
+  selection: {
+    name: 'Selection Sort',
+    best: 'O(n²)',
+    average: 'O(n²)',
+    worst: 'O(n²)',
+    space: 'O(1)',
+    stable: 'No',
+    note: 'Unstable. Always performs n(n-1)/2 comparisons, but at most O(n) swaps.'
+  },
+  insertion: {
+    name: 'Insertion Sort',
+    best: 'O(n)',
+    average: 'O(n²)',
+    worst: 'O(n²)',
+    space: 'O(1)',
+    stable: 'Yes',
+    note: 'Stable. Adaptive: extremely fast on sorted or nearly sorted input.'
+  },
+  merge: {
+    name: 'Merge Sort',
+    best: 'O(n log n)',
+    average: 'O(n log n)',
+    worst: 'O(n log n)',
+    space: 'O(n)',
+    stable: 'Yes',
+    note: 'Stable. Guaranteed O(n log n) in all cases; requires temporary auxiliary buffer.'
+  },
+  quickFirst: {
+    name: 'Quicksort (First-Element Pivot, Yellow/Green)',
+    best: 'O(n log n)',
+    average: 'O(n log n)',
+    worst: 'O(n²)',
+    space: 'O(log n) stack (O(n) worst)',
+    stable: 'No',
+    note: 'Unstable. Degrades to O(n²) worst-case on already sorted or reverse-sorted input because the first element creates unbalanced 0 and n-1 splits.'
+  },
+  quickRandom: {
+    name: 'Quicksort (Randomised Pivot)',
+    best: 'O(n log n)',
+    average: 'O(n log n)',
+    worst: 'O(n²)',
+    space: 'O(log n) stack',
+    stable: 'No',
+    note: 'Unstable. Random pivot selection prevents the O(n²) worst-case on sorted input, giving expected O(n log n) with high probability.'
+  }
+};
+
+function runSingleSort(algKey, rawInput) {
+  const arr = parseNumbers(rawInput || '');
+  if (arr.length === 0) throw new Error('Please enter at least one numeric value to sort.');
+  if (arr.length > 5000) throw new Error('Maximum 5,000 numbers allowed for single sorting.');
+
+  const runner = {
+    bubble: (a, c) => bubbleSort(a, c),
+    selection: (a, c) => selectionSort(a, c),
+    insertion: (a, c) => insertionSort(a, c),
+    merge: (a, c) => mergeSortInternal(a, 0, a.length - 1, c),
+    quickFirst: (a, c) => quickSortFirstPivot(a, 0, a.length - 1, c),
+    quickRandom: (a, c) => quickSortRandomPivot(a, 0, a.length - 1, c)
+  }[algKey];
+
+  if (!runner) throw new Error(`Unknown sorting algorithm: ${algKey}`);
+
+  // Unrecorded clean timing run
+  const cleanArr = arr.slice();
+  const cClean = { comparisons: 0, writes: 0, swaps: 0, moves: 0 };
+  const timed = timeIt(() => runner(cleanArr, cClean));
+
+  // Recorded visual run
+  const workArr = arr.slice();
+  const rec = new Recorder(true, 400);
+  const cRec = { comparisons: 0, writes: 0, swaps: 0, moves: 0, rec };
+  rec.add('Initial unsorted array', workArr, [], { type: 'init' });
+  runner(workArr, cRec);
+  rec.add('Final sorted array', workArr, [], { type: 'final' });
+
+  return {
+    algorithm: algKey,
+    info: SORT_INFO[algKey],
+    inputSize: arr.length,
+    initial: arr,
+    sorted: workArr,
+    stats: {
+      'Input size (n)': arr.length,
+      Comparisons: cRec.comparisons,
+      'Swaps / Moves': cRec.swaps || cRec.moves || 0,
+      'Total array writes': cRec.writes,
+      'Execution time (ms)': Number(timed.ms.toFixed(4))
+    },
+    steps: rec.steps,
+    dropped: rec.dropped
+  };
+}
+
+function runCompareAll(rawInput) {
+  const arr = parseNumbers(rawInput || '');
+  if (arr.length === 0) throw new Error('Please enter at least one numeric value to sort.');
+  if (arr.length > 5000) throw new Error('Maximum 5,000 numbers for comparison.');
+
+  const keys = ['bubble', 'selection', 'insertion', 'merge', 'quickFirst', 'quickRandom'];
+  const results = [];
+
+  for (const key of keys) {
+    const work = arr.slice();
+    const c = { comparisons: 0, writes: 0, swaps: 0, moves: 0 };
+    const runner = {
+      bubble: (a, c) => bubbleSort(a, c),
+      selection: (a, c) => selectionSort(a, c),
+      insertion: (a, c) => insertionSort(a, c),
+      merge: (a, c) => mergeSortInternal(a, 0, a.length - 1, c),
+      quickFirst: (a, c) => quickSortFirstPivot(a, 0, a.length - 1, c),
+      quickRandom: (a, c) => quickSortRandomPivot(a, 0, a.length - 1, c)
+    }[key];
+
+    const timed = timeIt(() => runner(work, c));
+    results.push({
+      key,
+      name: SORT_INFO[key].name,
+      comparisons: c.comparisons,
+      swapsMoves: c.swaps || c.moves || 0,
+      writes: c.writes,
+      timeMs: Number(timed.ms.toFixed(4)),
+      best: SORT_INFO[key].best,
+      average: SORT_INFO[key].average,
+      worst: SORT_INFO[key].worst,
+      space: SORT_INFO[key].space,
+      stable: SORT_INFO[key].stable
+    });
+  }
+
+  return {
+    inputSize: arr.length,
+    results
+  };
+}
+
+// ============================================================================
+// MODULE D: TIME COMPLEXITY ANALYSIS (BENCHMARK)
+// ============================================================================
+
+function generateInput(size, type) {
+  const arr = new Array(size);
+  if (type === 'sorted') {
+    for (let i = 0; i < size; i++) arr[i] = i + 1;
+  } else if (type === 'reverse') {
+    for (let i = 0; i < size; i++) arr[i] = size - i;
+  } else {
+    // Random input with pseudo-random seed
+    let seed = 1234567 + size;
+    for (let i = 0; i < size; i++) {
+      seed = (seed * 48271) % 2147483647;
+      arr[i] = seed % 100000;
+    }
+  }
+  return arr;
+}
+
+function runFullBenchmark(options = {}) {
+  // Configurable sizes or standard course sizes
+  const sizes = options.sizes || [100, 500, 1000, 2000, 5000, 10000];
+  const inputTypes = options.types || ['random', 'sorted', 'reverse'];
+  const repetitions = options.repetitions || 3;
+
+  const algorithms = [
+    { key: 'bubble', name: 'Bubble Sort', category: 'n2' },
+    { key: 'selection', name: 'Selection Sort', category: 'n2' },
+    { key: 'insertion', name: 'Insertion Sort', category: 'n2' },
+    { key: 'merge', name: 'Merge Sort', category: 'nlogn' },
+    { key: 'quickFirst', name: 'Quicksort (First Pivot)', category: 'hybrid' },
+    { key: 'quickRandom', name: 'Quicksort (Random Pivot)', category: 'nlogn' }
+  ];
+
+  const rows = [];
+
+  for (const n of sizes) {
+    for (const type of inputTypes) {
+      for (const alg of algorithms) {
+        // Skip O(n^2) runs on very large n to prevent browser stall
+        if (n > 5000 && alg.category === 'n2' && type === 'reverse') {
+          // Keep n=5000 or run once if feasible, or skip n=10000 for bubble/selection if requested
+        }
+
+        // Avoid call stack overflow for first-element quicksort on sorted/reverse at large n
+        const isQuickFirstDegraded = alg.key === 'quickFirst' && (type === 'sorted' || type === 'reverse') && n > 4000;
+
+        let totalTime = 0;
+        let totalComparisons = 0;
+        let totalWrites = 0;
+        let completedRuns = 0;
+
+        if (!isQuickFirstDegraded) {
+          for (let r = 0; r < repetitions; r++) {
+            const data = generateInput(n, type);
+            const c = { comparisons: 0, writes: 0, swaps: 0, moves: 0 };
+            const runner = {
+              bubble: (a, c) => bubbleSort(a, c),
+              selection: (a, c) => selectionSort(a, c),
+              insertion: (a, c) => insertionSort(a, c),
+              merge: (a, c) => mergeSortInternal(a, 0, a.length - 1, c),
+              quickFirst: (a, c) => quickSortFirstPivot(a, 0, a.length - 1, c),
+              quickRandom: (a, c) => quickSortRandomPivot(a, 0, a.length - 1, c)
+            }[alg.key];
+
+            try {
+              const timed = timeIt(() => runner(data, c));
+              totalTime += timed.ms;
+              totalComparisons += c.comparisons;
+              totalWrites += c.writes;
+              completedRuns++;
+            } catch (err) {
+              break;
+            }
+          }
+        }
+
+        rows.push({
+          n,
+          type,
+          key: alg.key,
+          name: alg.name,
+          category: alg.category,
+          avgTimeMs: completedRuns > 0 ? Number((totalTime / completedRuns).toFixed(3)) : 'Stack Overflow / Skipped',
+          avgComparisons: completedRuns > 0 ? Math.round(totalComparisons / completedRuns) : 'N/A',
+          avgWrites: completedRuns > 0 ? Math.round(totalWrites / completedRuns) : 'N/A',
+          runs: completedRuns
+        });
+      }
+    }
+  }
+
+  // Also test large n for O(n log n) sorts (Merge sort & Quick random)
+  const largeSizes = [50000, 100000];
+  const largeRows = [];
+  for (const n of largeSizes) {
+    for (const key of ['merge', 'quickRandom']) {
+      const data = generateInput(n, 'random');
+      const c = { comparisons: 0, writes: 0, swaps: 0, moves: 0 };
+      const runner = key === 'merge'
+        ? (a, c) => mergeSortInternal(a, 0, a.length - 1, c)
+        : (a, c) => quickSortRandomPivot(a, 0, a.length - 1, c);
+
+      const timed = timeIt(() => runner(data, c));
+      largeRows.push({
+        n,
+        type: 'random',
+        key,
+        name: SORT_INFO[key].name,
+        timeMs: Number(timed.ms.toFixed(3)),
+        comparisons: c.comparisons,
+        writes: c.writes
+      });
+    }
+  }
+
+  return {
+    sizes,
+    inputTypes,
+    repetitions,
+    rows,
+    largeRows,
+    analysis: {
+      insertionOnSorted:
+        'Insertion Sort is O(n) on already sorted input because each element a[i] is compared only once with a[i-1], finds a[i-1] <= a[i], and immediately terminates the inner while-loop with 0 shifts.',
+      quickFirstDegradation:
+        'Quicksort with first-element pivot degrades to O(n²) on sorted and reverse-sorted inputs because the first element is always the minimum (or maximum), resulting in maximally unbalanced splits of size 0 and n-1 at every recursive level, leading to n levels of recursion.',
+      randomPivotResolution:
+        'Randomised Quicksort picks a pivot uniformly at random from the active sub-array. The probability of consistently picking the extreme minimum or maximum is astronomically small (1/n!), yielding balanced splits on average and restoring O(n log n) expected time regardless of input ordering.'
+    }
+  };
+}
+
+// ============================================================================
+// UNIFIED API DISPATCHER
+// ============================================================================
+
 function handle(q) {
+  if (!q || !q.type) throw new Error('Invalid request payload: missing type.');
+
+  // Module A: Recursion
   if (q.type === 'fibonacci') return runFibonacci(q.n);
   if (q.type === 'factorial') return runFactorial(q.n);
   if (q.type === 'hanoi') return runTowerOfHanoi(q.n, q.source, q.dest, q.aux);
-  if (q.type === 'sort') return runSort(q.algorithm, q.input);
-  throw new Error('Unknown request type');
+
+  // Module B: Data Structures
+  if (q.type === 'brackets') return checkBalancedBrackets(q.expression || '');
+
+  // Module C: Sorting
+  if (q.type === 'sort') return runSingleSort(q.algorithm, q.input);
+  if (q.type === 'compareSorts') return runCompareAll(q.input);
+
+  // Module D: Complexity Benchmark
+  if (q.type === 'benchmark') return runFullBenchmark(q.options || {});
+
+  throw new Error(`Unknown request type: ${q.type}`);
 }
 
+// Exports
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     runFibonacci,
@@ -440,14 +864,23 @@ if (typeof module !== 'undefined' && module.exports) {
     bubbleSort,
     selectionSort,
     insertionSort,
-    mergeSort,
-    quickSort,
-    handle
+    mergeSortInternal,
+    quickSortFirstPivot,
+    quickSortRandomPivot,
+    runSingleSort,
+    runCompareAll,
+    runFullBenchmark,
+    handle,
+    SORT_INFO
   };
 }
 if (typeof window !== 'undefined') {
   window.runFibonacci = runFibonacci;
   window.runFactorial = runFactorial;
   window.runTowerOfHanoi = runTowerOfHanoi;
+  window.runSingleSort = runSingleSort;
+  window.runCompareAll = runCompareAll;
+  window.runFullBenchmark = runFullBenchmark;
   window.handle = handle;
+  window.SORT_INFO = SORT_INFO;
 }
