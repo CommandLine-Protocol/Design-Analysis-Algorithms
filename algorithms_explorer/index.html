@@ -1129,6 +1129,13 @@
               <b style="color: var(--txt);">3. How Randomised Pivot Resolves the Worst-Case:</b>
               <p style="margin: 4px 0; color: var(--mut); font-size: 13.5px;" id="discQuickRandom"></p>
             </div>
+
+            <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line);">
+              <b style="color: var(--txt);">Note on Experimental Graph Fluctuations vs Big-O Theory:</b>
+              <p style="margin: 4px 0; color: var(--mut); font-size: 13px;">
+                You may notice running times and chart heights fluctuate between benchmark runs. This occurs because the graphs plot live wall-clock time (milliseconds) measured in a browser JIT environment, which is subject to JavaScript V8 engine warm-up, garbage collection (GC) pauses, and OS CPU scheduling. Additionally, the charts auto-scale their vertical axis to the peak measured time of each specific run. Despite small millisecond jitter, the fundamental asymptotic growth rate remains constant: O(n²) sorts experience quadratic surges (~4x time when doubling n), while O(n log n) sorts maintain near-flat, efficient scalability (~2.1x time when doubling n).
+              </p>
+            </div>
           </div>
         </div>
       </div>
